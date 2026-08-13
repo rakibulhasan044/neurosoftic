@@ -1,10 +1,11 @@
 import express from "express";
 import { OrderController } from "./order.controller";
 import auth from "../../middlewares/auth";
+import optionalAuth from "../../middlewares/optionalAuth";
 
 const router = express.Router();
 
-router.post("/", OrderController.createOrder);
+router.post("/", optionalAuth(), OrderController.createOrder);
 router.post("/webhook", express.raw({type: 'application/json'}), OrderController.stripeWebhook);
 
 router.get("/", auth("SUPER_ADMIN", "ADMIN"), OrderController.getOrders);

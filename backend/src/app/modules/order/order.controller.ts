@@ -4,7 +4,8 @@ import { OrderService } from "./order.service";
 export const OrderController = {
   createOrder: async (req: Request, res: Response) => {
     try {
-      const userId = (req as any).user?.userId; // Assuming auth middleware sets this
+      const userId = (req as any).user?.userId; // Set by optionalAuth middleware
+      
       const result = await OrderService.createOrder(userId, req.body);
       res.status(201).json({
         success: true,

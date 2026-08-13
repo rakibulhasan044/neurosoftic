@@ -162,9 +162,23 @@ export const OrderService = {
     const { page = 1, limit = 10 } = filters;
     const skip = (page - 1) * limit;
 
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const userEmail = user?.email;
+
+    const whereClause = {
+      OR: [
+        { userId },
+        ...(userEmail ? [{ customerEmail: userEmail }] : [])
+      ]
+    };
+    
+    console.log("[DEBUG getMyOrders] userId:", userId);
+    console.log("[DEBUG getMyOrders] userEmail:", userEmail);
+    console.log("[DEBUG getMyOrders] whereClause:", JSON.stringify(whereClause, null, 2));
+
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
-        where: { userId },
+        where: whereClause,
         skip: Number(skip),
         take: Number(limit),
         orderBy: { createdAt: 'desc' },
@@ -172,14 +186,14 @@ export const OrderService = {
           items: {
             include: {
               variant: {
-                include: { product: { select: { name: true, image: true } } }
+                include: { product: { select: { name: true, media: true } } }
               }
             }
           },
           payment: true
         }
       }),
-      prisma.order.count({ where: { userId } })
+      prisma.order.count({ where: whereClause })
     ]);
 
     return {

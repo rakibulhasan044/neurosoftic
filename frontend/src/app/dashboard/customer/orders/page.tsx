@@ -23,6 +23,7 @@ export default function CustomerOrdersPage() {
         });
         if (res.ok) {
           const data = await res.json();
+          console.log("res", data);
           setOrders(data.orders || []);
         }
       } catch (err) {

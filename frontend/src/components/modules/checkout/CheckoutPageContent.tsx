@@ -61,13 +61,17 @@ export function CheckoutPageContent() {
       };
 
       // Try to create order with the backend
+      const token = localStorage.getItem('token');
+      const headers: any = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/orders`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Assuming an auth token would go here if implemented
-          // 'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
+        headers,
         body: JSON.stringify(payload)
       });
 
