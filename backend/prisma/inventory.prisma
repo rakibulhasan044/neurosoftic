@@ -5,7 +5,7 @@ model Warehouse {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   inventory Inventory[]
 }
 
@@ -22,20 +22,20 @@ model Inventory {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
-  movements        InventoryMovement[]
+  movements InventoryMovement[]
 
   @@unique([warehouseId, productVariantId])
 }
 
 model InventoryMovement {
-  id          String    @id @default(uuid())
+  id          String       @id @default(uuid())
   inventoryId String
-  inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  inventory   Inventory    @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
   quantity    Int
   type        MovementType
   reason      String?
   referenceId String?
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime     @default(now())
 }
 
 enum MovementType {

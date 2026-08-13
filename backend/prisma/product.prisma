@@ -1,3 +1,11 @@
+enum ProductStatus {
+  DRAFT
+  PENDING
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
 model Product {
   id          String           @id @default(uuid())
   name        String
@@ -5,25 +13,50 @@ model Product {
   description String?
   categoryId  String
   category    Category         @relation(fields: [categoryId], references: [id])
+  brandId     String?
+  brand       Brand?           @relation(fields: [brandId], references: [id])
+  tags        String[]         @default([])
+  status      ProductStatus    @default(DRAFT)
   variants    ProductVariant[]
+  media       ProductMedia[]
   reviews     Review[]
   wishlists   Wishlist[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 }
 
-model ProductVariant {
+model ProductMedia {
   id        String   @id @default(uuid())
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  sku       String   @unique
-  barcode   String?  @unique
-  price     Float
-  stock     Int      @default(0)
-  attributes Json?
-  orderItems OrderItem[]
-  cartItems  CartItem[]
-  inventory  Inventory[]
+  url       String
+  type      String   @default("IMAGE")
+  altText   String?
+  sortOrder Int      @default(0)
+  isPrimary Boolean  @default(false)
+  mobileUrl String?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+}
+
+model ProductVariant {
+  id          String      @id @default(uuid())
+  productId   String
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku         String      @unique
+  barcode     String?     @unique
+  variantCode String? // 4-digit code for barcode
+  size        String?
+  color       String?
+  designId    String?
+  design      Design?     @relation(fields: [designId], references: [id])
+  price       Float
+  salePrice   Float?
+  stock       Int         @default(0)
+  weight      Float?
+  attributes  Json?
+  orderItems  OrderItem[]
+  cartItems   CartItem[]
+  inventory   Inventory[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }

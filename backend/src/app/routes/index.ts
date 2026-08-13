@@ -5,10 +5,30 @@ import { ProductRoutes } from "../modules/product/product.routes";
 import { OrderRoutes } from "../modules/order/order.routes";
 import { StoreSettingsRoutes } from "../modules/store-settings/store-settings.routes";
 import { UploadRoutes } from "../modules/upload/upload.routes";
+import { CategoryRoutes } from "../modules/category/category.routes";
+import { BrandRoutes } from "../modules/brand/brand.routes";
+import { CollectionRoutes } from "../modules/collection/collection.routes";
+import { BarcodeRoutes } from "../modules/barcode/barcode.routes";
 
 const router = express.Router();
 
 const moduleRoutes = [
+  {
+    path: "/barcodes",
+    route: BarcodeRoutes,
+  },
+  {
+    path: "/categories",
+    route: CategoryRoutes,
+  },
+  {
+    path: "/brands",
+    route: BrandRoutes,
+  },
+  {
+    path: "/collections",
+    route: CollectionRoutes,
+  },
   {
     path: "/user",
     route: UserRoutes,

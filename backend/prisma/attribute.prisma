@@ -16,11 +16,12 @@ model AttributeValue {
 }
 
 model Design {
-  id          String   @id @default(uuid())
-  code        String   @unique
+  id          String           @id @default(uuid())
+  code        String           @unique
   name        String
   description String?
   imageUrl    String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  isActive    Boolean          @default(true)
+  variants    ProductVariant[]
+  createdAt   DateTime         @default(now())
 }

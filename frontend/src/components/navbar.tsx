@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { CartSheet } from "@/components/cart-sheet";
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -93,6 +93,9 @@ export function Navbar() {
   const dashboardLink = userRole === "SUPER_ADMIN" || userRole === "ADMIN" 
     ? "/dashboard/admin" 
     : "/dashboard/customer";
+
+  const pathname = usePathname();
+  if (pathname?.startsWith("/dashboard")) return null;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

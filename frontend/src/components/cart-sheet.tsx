@@ -14,15 +14,13 @@ export function CartSheet() {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative hover:bg-transparent">
+      <SheetTrigger className="relative inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 w-9">
           <ShoppingCart className="h-5 w-5 hover:text-primary transition-colors" />
           {cartCount > 0 && (
             <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-primary text-[10px] font-bold flex items-center justify-center text-primary-foreground">
               {cartCount}
             </span>
           )}
-        </Button>
       </SheetTrigger>
       <SheetContent className="flex flex-col w-full sm:max-w-md bg-background border-border/50">
         <SheetHeader className="pb-4 border-b border-border/50">
@@ -34,9 +32,11 @@ export function CartSheet() {
             <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
               <ShoppingCart className="h-16 w-16 text-muted" />
               <p className="text-muted-foreground text-lg">Your cart is empty</p>
-              <Button variant="outline" onClick={() => setOpen(false)} asChild>
-                <Link href="/products">Continue Shopping</Link>
-              </Button>
+              <Link href="/products">
+                <Button variant="outline" onClick={() => setOpen(false)}>
+                  Continue Shopping
+                </Button>
+              </Link>
             </div>
           ) : (
             <div className="space-y-4">
@@ -99,9 +99,11 @@ export function CartSheet() {
             <p className="text-sm text-muted-foreground text-center">
               Shipping and taxes calculated at checkout.
             </p>
-            <Button className="w-full h-12 text-base font-semibold" asChild onClick={() => setOpen(false)}>
-              <Link href="/checkout">Proceed to Checkout</Link>
-            </Button>
+            <Link href="/checkout">
+              <Button className="w-full h-12 text-base font-semibold" onClick={() => setOpen(false)}>
+                Proceed to Checkout
+              </Button>
+            </Link>
           </div>
         )}
       </SheetContent>

@@ -63,7 +63,7 @@ export default async function RootLayout({
             {children}
           </main>
           <Footer />
-          <Toaster />
+          <Toaster richColors position="top-right" />
         </CartProvider>
       </body>
     </html>

@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { 
+  Home,
+  LogOut,
   LayoutDashboard, 
   ShoppingBag, 
   Package, 
@@ -24,12 +26,18 @@ import { cn } from "@/lib/utils";
 
 const adminLinks = [
   { name: "Dashboard", href: "/dashboard/admin", icon: LayoutDashboard },
-  { name: "Catalog", href: "/dashboard/admin/catalog", icon: Tag },
   { name: "Inventory", href: "/dashboard/admin/inventory", icon: Package },
   { name: "Orders", href: "/dashboard/admin/orders", icon: ShoppingBag },
   { name: "Customers", href: "/dashboard/admin/customers", icon: Users },
   { name: "Support", href: "/dashboard/admin/support", icon: MessageSquare },
   { name: "Reports", href: "/dashboard/admin/reports", icon: BarChart },
+];
+
+const catalogLinks = [
+  { name: "Products", href: "/dashboard/admin/catalog/products", icon: Package },
+  { name: "Categories", href: "/dashboard/admin/catalog/categories", icon: Tag },
+  { name: "Brands", href: "/dashboard/admin/catalog/brands", icon: Layout },
+  { name: "Collections", href: "/dashboard/admin/catalog/collections", icon: ShoppingBag },
 ];
 
 const storeSettingsLinks = [
@@ -43,8 +51,20 @@ const storeSettingsLinks = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const isStoreActive = pathname.startsWith("/dashboard/admin/store");
+  const isCatalogActive = pathname.startsWith("/dashboard/admin/catalog");
   const [storeOpen, setStoreOpen] = useState(isStoreActive);
+  const [catalogOpen, setCatalogOpen] = useState(isCatalogActive);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userRole");
+    // trigger auth-change event if needed
+    window.dispatchEvent(new Event("auth-change"));
+    router.push("/");
+  };
 
   return (
     <div className="flex h-full w-64 flex-col bg-card border-r border-border">
@@ -72,6 +92,49 @@ export function AdminSidebar() {
               </Link>
             );
           })}
+
+          {/* Catalog Accordion */}
+          <div>
+            <button
+              onClick={() => setCatalogOpen(!catalogOpen)}
+              className={cn(
+                "w-full flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                isCatalogActive && !catalogOpen 
+                  ? "bg-primary/10 text-primary" 
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <Tag className="h-4 w-4" />
+                Catalog
+              </div>
+              {catalogOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </button>
+            
+            {catalogOpen && (
+              <div className="mt-1 flex flex-col gap-1 pl-9 pr-2">
+                {catalogLinks.map((link) => {
+                  const SubIcon = link.icon;
+                  const isActive = pathname === link.href;
+                  return (
+                    <Link
+                      key={link.name}
+                      href={link.href}
+                      className={cn(
+                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                        isActive 
+                          ? "bg-primary text-primary-foreground" 
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      <SubIcon className="h-3.5 w-3.5" />
+                      {link.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           {/* Store Settings Accordion */}
           <div>
@@ -117,8 +180,21 @@ export function AdminSidebar() {
           </div>
         </nav>
       </div>
-      <div className="border-t border-border p-4 text-xs text-center text-muted-foreground">
-        Neurosoftic v1.0.0
+      <div className="border-t border-border p-4 space-y-2">
+        <Link
+          href="/"
+          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <Home className="h-4 w-4" />
+          Go to Storefront
+        </Link>
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors text-destructive hover:bg-destructive/10 hover:text-destructive"
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
+        </button>
       </div>
     </div>
   );

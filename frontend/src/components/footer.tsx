@@ -1,7 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { Globe, MessageCircle, Share2, Camera } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 export function Footer() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/dashboard")) return null;
+
   return (
     <footer className="border-t bg-background">
       <div className="container mx-auto px-4 py-12 md:py-16">

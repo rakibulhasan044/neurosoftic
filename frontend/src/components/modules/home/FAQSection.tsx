@@ -21,7 +21,7 @@ export function FAQSection() {
           <p className="text-muted-foreground">Everything you need to know about our products and services.</p>
         </div>
         
-        <Accordion type="single" collapsible className="w-full bg-background rounded-2xl p-6 shadow-sm border border-border/50">
+        <Accordion className="w-full bg-background rounded-2xl p-6 shadow-sm border border-border/50">
           {faqs.map((faq, i) => (
             <AccordionItem key={i} value={`item-${i}`}>
               <AccordionTrigger className="text-left font-semibold text-lg hover:text-primary transition-colors">

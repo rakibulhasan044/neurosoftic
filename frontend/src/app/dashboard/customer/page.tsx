@@ -61,17 +61,21 @@ export default function CustomerDashboardPage() {
                       In Transit
                     </span>
                   </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/dashboard/customer/orders/${i}`}>View</Link>
-                  </Button>
+                  <Link href={`/dashboard/customer/orders/${i}`}>
+                    <Button variant="outline" size="sm">
+                      View
+                    </Button>
+                  </Link>
                 </div>
               </div>
             ))}
           </div>
           <div className="mt-4 text-center">
-            <Button variant="link" asChild>
-              <Link href="/dashboard/customer/orders">View all orders</Link>
-            </Button>
+            <Link href="/dashboard/customer/orders">
+              <Button variant="link">
+                View all orders
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>

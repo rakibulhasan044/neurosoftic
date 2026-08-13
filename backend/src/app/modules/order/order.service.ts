@@ -2,30 +2,47 @@
 import { prisma } from "@/app/lib/prisma";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.SECRET_KEY as string, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: "2023-10-16" as any, // using any to bypass strict version checks if needed
 });
 
 export const OrderService = {
-  createOrder: async (userId: string, payload: any) => {
-    // Basic implementation
-    const { items, successUrl, cancelUrl } = payload;
-    let totalAmount = 0;
+  createOrder: async (userId: string | null | undefined, payload: any) => {
+    const { items, successUrl, cancelUrl, shippingMethod, paymentMethod, customerInfo } = payload;
+    let subTotal = 0;
+    
+    const shippingCost = shippingMethod === "inside_dhaka" ? 60 : shippingMethod === "outside_dhaka" ? 120 : 0;
+    const discount = 0; // future: handle coupons
 
-    // Validate items and calculate total amount
+    // Validate items and calculate subTotal
     for (const item of items) {
       const variant = await prisma.productVariant.findUnique({
         where: { id: item.productVariantId },
       });
       if (!variant) throw new Error(`Variant ${item.productVariantId} not found`);
-      totalAmount += variant.price * item.quantity;
+      subTotal += variant.price * item.quantity;
     }
+
+    const totalAmount = subTotal;
+    const payableAmount = totalAmount + shippingCost - discount;
+
+    let dbPaymentMethod = "CASH_ON_DELIVERY";
+    if (paymentMethod === "stripe") dbPaymentMethod = "STRIPE";
+    if (paymentMethod === "partial") dbPaymentMethod = "PARTIAL_PAYMENT";
+    if (paymentMethod === "manual") dbPaymentMethod = "MANUAL";
 
     // Create order in database
     const order = await prisma.order.create({
       data: {
-        userId,
+        userId: userId || null,
         totalAmount,
+        shippingCost,
+        discount,
+        payableAmount,
+        paymentMode: dbPaymentMethod as any,
+        customerEmail: customerInfo?.email || null,
+        customerPhone: customerInfo?.phone || null,
+        shippingAddress: customerInfo || null,
         items: {
           create: items.map((item: any) => ({
             productVariantId: item.productVariantId,
@@ -36,6 +53,26 @@ export const OrderService = {
       },
     });
 
+    if (dbPaymentMethod === "CASH_ON_DELIVERY" || dbPaymentMethod === "MANUAL") {
+      // Just record pending payment and return success without stripe URL
+      await prisma.payment.create({
+        data: {
+          orderId: order.id,
+          amount: payableAmount,
+          method: dbPaymentMethod as any,
+          status: "PENDING",
+        },
+      });
+      return { url: null, order };
+    }
+
+    // Otherwise, handle STRIPE or PARTIAL_PAYMENT via Stripe
+    let stripePayableAmount = payableAmount;
+    if (dbPaymentMethod === "PARTIAL_PAYMENT") {
+      // Advance amount: flat 200 for now
+      stripePayableAmount = 200; 
+    }
+
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -43,26 +80,28 @@ export const OrderService = {
       success_url: successUrl || "http://localhost:3000/success",
       cancel_url: cancelUrl || "http://localhost:3000/cancel",
       client_reference_id: order.id,
-      line_items: items.map((item: any) => ({
-        price_data: {
-          currency: "usd", // default currency
-          product_data: {
-            name: `Product Variant ID: ${item.productVariantId}`,
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: `Order #${order.id.slice(0,8)} - ${dbPaymentMethod === "PARTIAL_PAYMENT" ? "Advance Payment" : "Full Payment"}`,
+            },
+            unit_amount: Math.round(stripePayableAmount * 100),
           },
-          unit_amount: Math.round(item.price * 100),
-        },
-        quantity: item.quantity,
-      })),
+          quantity: 1,
+        }
+      ],
     });
 
     // Save payment intent reference
     await prisma.payment.create({
       data: {
         orderId: order.id,
-        amount: totalAmount,
-        method: "STRIPE",
+        amount: stripePayableAmount,
+        method: dbPaymentMethod as any,
         status: "PENDING",
-        transactionId: session.id, // using session id to map back
+        transactionId: session.id,
       },
     });
 

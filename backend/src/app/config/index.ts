@@ -24,8 +24,9 @@ const config = {
 
   },
   stripe: {
-    secret_key: requireString("SECRET_KEY"),
-    publishable_key: requireString("PUBLISHABLE_KEY")
+    secret_key: requireString("STRIPE_SECRET_KEY"),
+    publishable_key: requireString("STRIPE_PUBLISHABLE_KEY"),
+    webhook_secret: requireString("STRIPE_WEBHOOK_SECRET"),
   },
 
   //   resetPassLink: requireString("RESET_PASS_LINK"),

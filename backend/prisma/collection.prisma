@@ -1,0 +1,13 @@
+model Collection {
+  id        String    @id @default(uuid())
+  name      String
+  slug        String    @unique
+  description String?
+  banner      String?
+  rules       Json?
+  isActive  Boolean   @default(true)
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}

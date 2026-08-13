@@ -13,12 +13,12 @@ model SEOConfig {
 }
 
 model ThemeConfig {
-  id              String  @id @default(uuid())
-  primaryColor    String?
-  secondaryColor  String?
-  fontFamily      String?
-  logoUrl         String?
-  faviconUrl      String?
+  id             String  @id @default(uuid())
+  primaryColor   String?
+  secondaryColor String?
+  fontFamily     String?
+  logoUrl        String?
+  faviconUrl     String?
 }
 
 model AuditLog {
@@ -33,13 +33,13 @@ model AuditLog {
 }
 
 model WebhookLog {
-  id         String   @id @default(uuid())
-  provider   String
-  event      String
-  payload    Json
-  status     String
-  error      String?
-  createdAt  DateTime @default(now())
+  id        String   @id @default(uuid())
+  provider  String
+  event     String
+  payload   Json
+  status    String
+  error     String?
+  createdAt DateTime @default(now())
 }
 
 model Notification {
@@ -48,7 +48,7 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   title     String
   message   String
-  type      String   // e.g. ORDER, PROMOTION, ALERT
+  type      String // e.g. ORDER, PROMOTION, ALERT
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 }

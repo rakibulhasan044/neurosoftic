@@ -1,0 +1,7 @@
+model BarcodeSequence {
+  id        String   @id @default(uuid())
+  prefix    String   @unique // e.g., "EL0038" (Category Prefix + Variant Code)
+  lastValue Int      @default(0) // The sequential unique serial
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

@@ -8,13 +8,13 @@ model OrderStatusHistory {
 }
 
 model PaymentAllocation {
-  id          String   @id @default(uuid())
-  orderId     String
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  amount      Float
-  method      String
-  reference   String?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount    Float
+  method    String
+  reference String?
+  createdAt DateTime @default(now())
 }
 
 model CourierProvider {

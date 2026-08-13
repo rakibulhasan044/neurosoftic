@@ -3,68 +3,41 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, ShieldCheck, Truck, ArrowLeft } from "lucide-react";
+import { ShoppingCart, ShieldCheck, Truck, ArrowLeft, Check } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
-interface Product {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  price: number;
-  stock: number;
-  images: string[];
-  categoryId: string;
-}
-
 export default function ProductDetailPage() {
   const { slug } = useParams();
   const { addItem } = useCart();
   
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [selectedVariant, setSelectedVariant] = useState<any>(null);
+  const [activeImage, setActiveImage] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchProduct() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/products`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/products/${slug}`);
         if (!res.ok) throw new Error("Failed to fetch");
         const json = await res.json();
         
-        // Find product by slug
-        const found = json.data.find((p: Product) => p.slug === slug);
-        if (found) {
-          setProduct(found);
-        } else {
-          // Dummy fallback
-          setProduct({
-            id: "1",
-            name: "Aether Pro Wireless",
-            slug: "aether-pro-wireless",
-            description: "Experience sound in pure fidelity. Next-generation active noise cancellation with studio-quality acoustics. Built with premium aerospace-grade aluminum and memory foam ear cushions for all-day comfort.",
-            price: 349.99,
-            stock: 50,
-            images: ["/hero-banner.jpg"],
-            categoryId: "audio",
-          });
+        if (json.success && json.data) {
+          setProduct(json.data);
+          if (json.data.variants && json.data.variants.length > 0) {
+            setSelectedVariant(json.data.variants[0]);
+          }
+          if (json.data.media && json.data.media.length > 0) {
+            const primary = json.data.media.find((m: any) => m.isPrimary);
+            setActiveImage(primary ? primary.url : json.data.media[0].url);
+          }
         }
       } catch (error) {
         console.error("Error fetching product:", error);
-        // Fallback for demo
-        setProduct({
-          id: "1",
-          name: "Aether Pro Wireless",
-          slug: "aether-pro-wireless",
-          description: "Experience sound in pure fidelity. Next-generation active noise cancellation with studio-quality acoustics. Built with premium aerospace-grade aluminum and memory foam ear cushions for all-day comfort.",
-          price: 349.99,
-          stock: 50,
-          images: ["/hero-banner.jpg"],
-          categoryId: "audio",
-        });
       } finally {
         setLoading(false);
       }
@@ -87,41 +60,63 @@ export default function ProductDetailPage() {
     return (
       <div className="container mx-auto px-4 py-24 text-center">
         <h2 className="text-2xl font-bold mb-4">Product not found</h2>
-        <Button asChild>
-          <Link href="/products">Back to Products</Link>
-        </Button>
+        <Link href="/products">
+          <Button>Back to Products</Button>
+        </Link>
       </div>
     );
   }
 
   const handleAddToCart = () => {
+    if (!selectedVariant) {
+      toast.error("Please select an option first.");
+      return;
+    }
+
+    if (quantity > selectedVariant.stock) {
+      toast.error("Not enough stock available.");
+      return;
+    }
+
     addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
+      id: selectedVariant.id, // Add variant ID to cart
+      name: `${product.name} ${selectedVariant.size ? `- ${selectedVariant.size}` : ''} ${selectedVariant.color ? `(${selectedVariant.color})` : ''}`,
+      price: selectedVariant.price,
       quantity: quantity,
-      image: product.images?.[0],
+      image: activeImage || undefined,
     });
     
-    toast("Added to Cart", {
+    toast.success("Added to Cart", {
       description: `${quantity}x ${product.name} has been added to your cart.`,
-      duration: 3000,
     });
   };
 
+  const hasVariants = product.variants && product.variants.length > 0;
+  const currentPrice = selectedVariant ? selectedVariant.price : 0;
+  const currentStock = selectedVariant ? selectedVariant.stock : 0;
+  const currentSku = selectedVariant ? selectedVariant.sku : "";
+
   return (
     <div className="container mx-auto px-4 py-12">
-      <Link href="/products" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors mb-8">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Products
-      </Link>
+      <div className="mb-8 flex items-center gap-2 text-sm text-muted-foreground">
+        <Link href="/products" className="hover:text-primary transition-colors">Catalog</Link>
+        <span>/</span>
+        {product.category && (
+          <>
+            <span className="text-foreground">{product.category.name}</span>
+            <span>/</span>
+          </>
+        )}
+        <span className="text-primary font-medium truncate">{product.name}</span>
+      </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
         {/* Product Images */}
         <div className="space-y-4">
           <div className="aspect-square relative rounded-2xl overflow-hidden bg-muted border border-border/50 shadow-sm">
-            {product.images && product.images.length > 0 ? (
+            {activeImage ? (
               <Image 
-                src={product.images[0]} 
+                src={activeImage} 
                 alt={product.name} 
                 fill 
                 className="object-cover" 
@@ -133,47 +128,104 @@ export default function ProductDetailPage() {
               </div>
             )}
           </div>
+          
+          {/* Thumbnails */}
+          {product.media && product.media.length > 1 && (
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {product.media.map((img: any) => (
+                <button 
+                  key={img.id}
+                  onClick={() => setActiveImage(img.url)}
+                  className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 flex-shrink-0 ${activeImage === img.url ? 'border-primary' : 'border-transparent opacity-70 hover:opacity-100'}`}
+                >
+                  <Image src={img.url} alt="Thumbnail" fill className="object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Product Info */}
         <div className="flex flex-col">
-          <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground mb-4">{product.name}</h1>
-          <div className="text-3xl font-bold text-primary mb-6">${Number(product.price).toFixed(2)}</div>
+          <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground mb-2">{product.name}</h1>
+          <div className="flex items-center gap-4 mb-6">
+            {product.brand && <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{product.brand.name}</span>}
+            {currentSku && <span className="text-xs bg-muted px-2 py-1 rounded font-mono text-muted-foreground">SKU: {currentSku}</span>}
+          </div>
           
-          <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-            {product.description}
-          </p>
+          <div className="text-3xl font-bold text-primary mb-6">${Number(currentPrice).toFixed(2)}</div>
+          
+          <div className="prose prose-sm dark:prose-invert text-muted-foreground mb-8">
+            <p>{product.description || "No description provided."}</p>
+          </div>
 
           <div className="space-y-6 mb-10">
-            <div className="flex items-center space-x-4">
-              <span className="font-medium">Quantity</span>
-              <div className="flex items-center border border-border rounded-md">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="rounded-none h-10 w-10"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  disabled={quantity <= 1}
-                >
-                  -
-                </Button>
-                <span className="w-12 text-center font-medium">{quantity}</span>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="rounded-none h-10 w-10"
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                  disabled={quantity >= product.stock}
-                >
-                  +
-                </Button>
+            {/* Variants Selector */}
+            {hasVariants && product.variants.length > 1 && (
+              <div className="space-y-4 pt-4 border-t">
+                <h3 className="font-semibold text-sm uppercase tracking-wider">Select Option</h3>
+                <div className="flex flex-wrap gap-3">
+                  {product.variants.map((variant: any) => (
+                    <button
+                      key={variant.id}
+                      onClick={() => setSelectedVariant(variant)}
+                      className={`relative px-4 py-3 rounded-lg border-2 text-left transition-all ${selectedVariant?.id === variant.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50 bg-card'}`}
+                    >
+                      {selectedVariant?.id === variant.id && (
+                        <div className="absolute top-2 right-2 text-primary">
+                          <Check className="h-4 w-4" />
+                        </div>
+                      )}
+                      <div className="font-medium pr-6">{variant.size || variant.color || variant.sku}</div>
+                      {variant.color && variant.size && <div className="text-xs text-muted-foreground">{variant.color}</div>}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <span className="text-sm text-muted-foreground">{product.stock} available</span>
-            </div>
+            )}
 
-            <Button size="lg" className="w-full h-14 text-lg font-semibold rounded-full" onClick={handleAddToCart}>
-              <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
-            </Button>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4 border-t">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center border border-border rounded-md bg-card">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="rounded-none h-14 w-14"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={quantity <= 1 || currentStock === 0}
+                  >
+                    -
+                  </Button>
+                  <span className="w-12 text-center font-medium">{quantity}</span>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="rounded-none h-14 w-14"
+                    onClick={() => setQuantity(Math.min(currentStock, quantity + 1))}
+                    disabled={quantity >= currentStock || currentStock === 0}
+                  >
+                    +
+                  </Button>
+                </div>
+              </div>
+
+              <Button 
+                size="lg" 
+                className="flex-1 h-14 text-lg font-semibold rounded-md shadow-lg" 
+                onClick={handleAddToCart}
+                disabled={currentStock === 0}
+              >
+                <ShoppingCart className="mr-2 h-5 w-5" /> 
+                {currentStock === 0 ? "Out of Stock" : "Add to Cart"}
+              </Button>
+            </div>
+            
+            {currentStock > 0 && currentStock <= 10 && (
+              <p className="text-sm text-orange-500 font-medium">Hurry! Only {currentStock} left in stock.</p>
+            )}
+            {currentStock === 0 && (
+              <p className="text-sm text-destructive font-medium">This item is currently out of stock.</p>
+            )}
           </div>
 
           <div className="mt-auto grid grid-cols-1 sm:grid-cols-2 gap-4 pt-8 border-t border-border/50">
@@ -182,8 +234,8 @@ export default function ProductDetailPage() {
                 <Truck className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="font-semibold text-sm">Free Shipping</h4>
-                <p className="text-xs text-muted-foreground">On all orders over $200</p>
+                <h4 className="font-semibold text-sm">Fast Delivery</h4>
+                <p className="text-xs text-muted-foreground">Dispatched within 24 hours</p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
@@ -191,8 +243,8 @@ export default function ProductDetailPage() {
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="font-semibold text-sm">2-Year Warranty</h4>
-                <p className="text-xs text-muted-foreground">Full coverage guarantee</p>
+                <h4 className="font-semibold text-sm">Secure Checkout</h4>
+                <p className="text-xs text-muted-foreground">100% protected payments</p>
               </div>
             </div>
           </div>

@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { 
   User, 
   ShoppingBag, 
   Heart, 
   MapPin, 
   CreditCard,
-  LogOut
+  LogOut,
+  Home
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,16 @@ const customerLinks = [
 
 export function CustomerSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userRole");
+    // trigger auth-change event if needed
+    window.dispatchEvent(new Event("auth-change"));
+    router.push("/");
+  };
 
   return (
     <div className="flex h-full w-64 flex-col bg-card border-r border-border">
@@ -57,8 +68,15 @@ export function CustomerSidebar() {
           })}
         </nav>
       </div>
-      <div className="p-4 border-t border-border">
-        <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10">
+      <div className="p-4 border-t border-border space-y-2">
+        <Link
+          href="/"
+          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <Home className="h-4 w-4" />
+          Go to Storefront
+        </Link>
+        <Button variant="ghost" onClick={handleLogout} className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10">
           <LogOut className="mr-2 h-4 w-4" />
           Logout
         </Button>
