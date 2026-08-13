@@ -1,24 +1,68 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Package, Clock, ShieldCheck } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { Package, Clock, ShieldCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { format } from "date-fns";
 
 export default function CustomerDashboardPage() {
+  const [profile, setProfile] = useState<any>(null);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const [profileRes, ordersRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/user/profile`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/orders/me/orders?limit=3`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+        ]);
+
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          setProfile(profileData.data);
+        }
+        if (ordersRes.ok) {
+          const ordersData = await ordersRes.json();
+          setOrders(ordersData.orders || []);
+        }
+      } catch (err) {
+        console.error("Error fetching dashboard data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const pendingOrders = orders.filter(o => !['DELIVERED', 'CANCELLED', 'RETURNED'].includes(o.status)).length;
+
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">My Account</h1>
-        <p className="text-muted-foreground mt-2">Welcome back! Here's an overview of your account.</p>
+        <p className="text-muted-foreground mt-2">Welcome back, {profile?.name || localStorage.getItem('userName') || 'Customer'}! Here's an overview of your account.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+            <CardTitle className="text-sm font-medium">Recent Orders</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
+            <div className="text-2xl font-bold">{orders.length > 0 ? orders.length + (orders.length === 3 ? '+' : '') : 0}</div>
           </CardContent>
         </Card>
         <Card>
@@ -27,7 +71,7 @@ export default function CustomerDashboardPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2</div>
+            <div className="text-2xl font-bold">{pendingOrders}</div>
           </CardContent>
         </Card>
         <Card>
@@ -47,36 +91,45 @@ export default function CustomerDashboardPage() {
           <CardDescription>Your most recent purchases and their status.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {[1, 2].map((i) => (
-              <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between border rounded-lg p-4 gap-4">
-                <div>
-                  <p className="font-semibold text-primary">#ORD-983{i}2</p>
-                  <p className="text-sm text-muted-foreground">Placed on Aug 12, 2026</p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="font-bold">$249.99</p>
-                    <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-secondary/20 text-secondary-foreground">
-                      In Transit
-                    </span>
+          {loading ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">Loading orders...</p>
+          ) : orders.length === 0 ? (
+            <div className="text-center py-6">
+              <p className="text-muted-foreground mb-4">You haven't placed any orders yet.</p>
+              <Link href="/products" className={buttonVariants({ variant: "outline" })}>Start Shopping</Link>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-4">
+                {orders.map((order) => (
+                  <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between border rounded-lg p-4 gap-4">
+                    <div>
+                      <p className="font-semibold text-primary">#{order.id.slice(0, 8).toUpperCase()}</p>
+                      <p className="text-sm text-muted-foreground">Placed on {format(new Date(order.createdAt), "MMM d, yyyy")}</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="font-bold">৳{order.payableAmount?.toFixed(2) || order.totalAmount?.toFixed(2)}</p>
+                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-secondary/20 text-secondary-foreground">
+                          {order.status.replace("_", " ")}
+                        </span>
+                      </div>
+                      <Link href={`/dashboard/customer/orders/${order.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+                        View
+                      </Link>
+                    </div>
                   </div>
-                  <Link href={`/dashboard/customer/orders/${i}`}>
-                    <Button variant="outline" size="sm">
-                      View
-                    </Button>
-                  </Link>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <div className="mt-4 text-center">
-            <Link href="/dashboard/customer/orders">
-              <Button variant="link">
-                View all orders
-              </Button>
-            </Link>
-          </div>
+              <div className="mt-6 text-center">
+                <Link href="/dashboard/customer/orders" className={buttonVariants({ variant: "link" })}>
+                  <span className="flex items-center">
+                    View all orders <ArrowRight className="ml-2 h-4 w-4" />
+                  </span>
+                </Link>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

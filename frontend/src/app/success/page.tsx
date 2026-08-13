@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 
 export default function SuccessPage() {
   const { clearCart } = useCart();
@@ -13,7 +14,8 @@ export default function SuccessPage() {
   useEffect(() => {
     // Clear the cart when landing on the success page
     clearCart();
-  }, [clearCart]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-muted/20 p-4">
@@ -25,15 +27,11 @@ export default function SuccessPage() {
             Thank you for your purchase. We have received your order and will start processing it right away.
           </p>
           <div className="space-y-3">
-            <Link href="/dashboard/customer">
-              <Button className="w-full" variant="default">
-                View Order Status
-              </Button>
+            <Link href="/dashboard/customer" className={buttonVariants({ variant: "default", className: "w-full" })}>
+              View Order Status
             </Link>
-            <Link href="/products">
-              <Button className="w-full" variant="outline">
-                Continue Shopping
-              </Button>
+            <Link href="/products" className={buttonVariants({ variant: "outline", className: "w-full" })}>
+              Continue Shopping
             </Link>
           </div>
         </CardContent>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { 
   User, 
   ShoppingBag, 
@@ -15,24 +16,47 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 const customerLinks = [
-  { name: "My Profile", href: "/dashboard/customer", icon: User },
+  { name: "Overview", href: "/dashboard/customer", icon: User },
+  { name: "My Profile", href: "/dashboard/customer/profile", icon: User },
   { name: "Orders", href: "/dashboard/customer/orders", icon: ShoppingBag },
   { name: "Wishlist", href: "/dashboard/customer/wishlist", icon: Heart },
   { name: "Addresses", href: "/dashboard/customer/addresses", icon: MapPin },
-  { name: "Payment Methods", href: "/dashboard/customer/payment", icon: CreditCard },
+  { name: "Payments", href: "/dashboard/customer/payment", icon: CreditCard },
+  { name: "Security", href: "/dashboard/customer/security", icon: LogOut },
 ];
 
 export function CustomerSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/user/profile`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setProfile(data.data);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userName");
     localStorage.removeItem("userRole");
-    // trigger auth-change event if needed
     window.dispatchEvent(new Event("auth-change"));
     router.push("/");
+  };
+
+  const getInitials = (name: string) => {
+    if (!name) return "U";
+    return name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
   };
 
   return (
@@ -40,10 +64,10 @@ export function CustomerSidebar() {
       <div className="flex-1 py-8">
         <div className="px-6 mb-8 text-center">
           <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold mx-auto mb-4">
-            JD
+            {getInitials(profile?.name || localStorage.getItem("userName") || "")}
           </div>
-          <h2 className="font-semibold text-lg">John Doe</h2>
-          <p className="text-sm text-muted-foreground">john@example.com</p>
+          <h2 className="font-semibold text-lg">{profile?.name || localStorage.getItem("userName") || "Customer"}</h2>
+          <p className="text-sm text-muted-foreground">{profile?.email || ""}</p>
         </div>
         
         <nav className="grid gap-2 px-4">

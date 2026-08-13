@@ -35,6 +35,20 @@ export const OrderController = {
     }
   },
 
+  getMyOrders: async (req: Request, res: Response) => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        res.status(401).json({ success: false, message: "Unauthorized" });
+        return;
+      }
+      const result = await OrderService.getMyOrders(userId, req.query);
+      res.status(200).json({ success: true, ...result });
+    } catch (err: any) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
   getOrderById: async (req: Request, res: Response) => {
     try {
       const result = await OrderService.getOrderById(req.params.id);
