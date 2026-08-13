@@ -102,4 +102,26 @@ export const UserController = {
       res.status(400).json({ success: false, message: error.message });
     }
   },
+
+  createAdmin: async (req: Request, res: Response) => {
+    try {
+      const result = await UserService.createAdmin(req.body);
+      res.status(201).json({
+        success: true,
+        message: "Admin created successfully",
+        data: result,
+      });
+    } catch (err: any) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  getCustomers: async (req: Request, res: Response) => {
+    try {
+      const result = await UserService.getCustomers(req.query);
+      res.status(200).json({ success: true, ...result });
+    } catch (err: any) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  }
 };

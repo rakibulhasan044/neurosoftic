@@ -79,29 +79,22 @@ export function CheckoutPageContent() {
           window.location.href = json.data.url;
         } else {
           // COD or Manual payment successful immediately
-          simulateCheckoutSuccess();
+          clearCart();
+          router.push("/success");
         }
       } else {
-        // Fallback simulation if backend fails (e.g. no auth or no matching variants in DB)
-        console.warn("Backend checkout failed, simulating success for demo purposes", json);
-        simulateCheckoutSuccess();
+        toast.error("Checkout Failed", {
+          description: json.message || "Something went wrong during checkout.",
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Checkout error:", error);
-      simulateCheckoutSuccess();
-    }
-  };
-
-  const simulateCheckoutSuccess = () => {
-    setTimeout(() => {
-      setLoading(false);
-      clearCart();
-      toast("Order Placed Successfully!", {
-        description: "Your payment was processed. (Simulated)",
-        duration: 5000,
+      toast.error("Error", {
+        description: error.message || "An unexpected error occurred.",
       });
-      router.push("/");
-    }, 2000);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (items.length === 0) {

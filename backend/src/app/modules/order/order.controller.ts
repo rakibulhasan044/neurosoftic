@@ -24,5 +24,33 @@ export const OrderController = {
     } catch (err: any) {
       res.status(400).send(`Webhook Error: ${err.message}`);
     }
+  },
+
+  getOrders: async (req: Request, res: Response) => {
+    try {
+      const result = await OrderService.getOrders(req.query);
+      res.status(200).json({ success: true, ...result });
+    } catch (err: any) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  getOrderById: async (req: Request, res: Response) => {
+    try {
+      const result = await OrderService.getOrderById(req.params.id);
+      res.status(200).json({ success: true, data: result });
+    } catch (err: any) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  updateOrderStatus: async (req: Request, res: Response) => {
+    try {
+      const { status } = req.body;
+      const result = await OrderService.updateOrderStatus(req.params.id, status);
+      res.status(200).json({ success: true, data: result });
+    } catch (err: any) {
+      res.status(400).json({ success: false, message: err.message });
+    }
   }
 };

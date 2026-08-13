@@ -34,7 +34,7 @@ export const OrderService = {
     // Create order in database
     const order = await prisma.order.create({
       data: {
-        userId: userId || null,
+        ...(userId ? { user: { connect: { id: userId } } } : {}),
         totalAmount,
         shippingCost,
         discount,
@@ -125,5 +125,82 @@ export const OrderService = {
         });
       }
     }
+  },
+
+  getOrders: async (filters: any) => {
+    const { page = 1, limit = 10, status } = filters;
+    const skip = (page - 1) * limit;
+
+    const where = status ? { status } : {};
+
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        skip: Number(skip),
+        take: Number(limit),
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: { select: { name: true, email: true } },
+          payment: true
+        }
+      }),
+      prisma.order.count({ where })
+    ]);
+
+    return {
+      orders,
+      meta: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / limit)
+      }
+    };
+  },
+
+  getOrderById: async (id: string) => {
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        user: { select: { name: true, email: true, phone: true } },
+        items: {
+          include: {
+            variant: {
+              include: {
+                product: { select: { name: true } }
+              }
+            }
+          }
+        },
+        payment: true,
+        allocations: true,
+        statusHistory: {
+          orderBy: { createdAt: 'desc' }
+        }
+      }
+    });
+    if (!order) throw new Error("Order not found");
+    return order;
+  },
+
+  updateOrderStatus: async (id: string, status: any) => {
+    // Record status history
+    const order = await prisma.order.findUnique({ where: { id } });
+    if (!order) throw new Error("Order not found");
+
+    const updated = await prisma.$transaction(async (tx) => {
+      await tx.orderStatusHistory.create({
+        data: {
+          orderId: id,
+          status: status as any,
+          notes: "Status updated by admin"
+        }
+      });
+      return tx.order.update({
+        where: { id },
+        data: { status: status as any }
+      });
+    });
+    return updated;
   }
 };

@@ -11,6 +11,7 @@ router.patch("/profile", auth(), UserController.updateProfile);
 // Address routes
 router.get("/addresses", auth(), UserController.getAddresses);
 router.post("/addresses", auth(), UserController.addAddress);
+router.get("/customers", UserController.getCustomers);
 router.patch("/addresses/:id", auth(), UserController.updateAddress);
 router.delete("/addresses/:id", auth(), UserController.deleteAddress);
 

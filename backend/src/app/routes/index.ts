@@ -9,6 +9,8 @@ import { CategoryRoutes } from "../modules/category/category.routes";
 import { BrandRoutes } from "../modules/brand/brand.routes";
 import { CollectionRoutes } from "../modules/collection/collection.routes";
 import { BarcodeRoutes } from "../modules/barcode/barcode.routes";
+import { DashboardRoutes } from "../modules/dashboard/dashboard.routes";
+import { InventoryRoutes } from "../modules/inventory/inventory.routes";
 
 const router = express.Router();
 
@@ -52,6 +54,14 @@ const moduleRoutes = [
   {
     path: "/upload",
     route: UploadRoutes,
+  },
+  {
+    path: "/dashboard",
+    route: DashboardRoutes,
+  },
+  {
+    path: "/inventory",
+    route: InventoryRoutes,
   }
 ];
 
