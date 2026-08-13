@@ -46,4 +46,23 @@ export const AuthService = {
 
     return { user, token };
   },
+
+  changePassword: async (userId: string, payload: any) => {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new Error("User not found");
+
+    // Optional: verify old password if you want, but for forced change, they just logged in
+    
+    const hashedPassword = await bcrypt.hash(payload.newPassword, 12);
+    
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+        forcePasswordChange: false,
+      },
+    });
+
+    return { message: "Password updated successfully" };
+  }
 };

@@ -34,7 +34,7 @@ export function AuthPageContent() {
     e.preventDefault();
     setLoginLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/auth/login`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
@@ -51,7 +51,13 @@ export function AuthPageContent() {
           }
           window.dispatchEvent(new Event("auth-change"));
         }
-        router.push("/");
+        
+        if (data.data.user?.forcePasswordChange) {
+          toast("Action Required", { description: "You must change your password before continuing." });
+          router.push("/change-password");
+        } else {
+          router.push("/");
+        }
       } else {
         toast.error(data.message || "Failed to login");
       }
@@ -66,7 +72,7 @@ export function AuthPageContent() {
     e.preventDefault();
     setRegisterLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/auth/register`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: registerName, email: registerEmail, password: registerPassword }),

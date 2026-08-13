@@ -11,6 +11,7 @@ const config = {
 
   super_admin: {
     email: requireString("SUPER_ADMIN_EMAIL"),
+    password: requireString("SUPER_ADMIN_PASSWORD"),
     name: requireString("SUPER_ADMIN_NAME"),
     contactNumber: requireString("SUPER_ADMIN_PHONE"),
   },

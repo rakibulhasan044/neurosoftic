@@ -101,9 +101,21 @@ export const UserService = {
 
   // Admin Methods
   createUser: async (payload: any, adminRole: string) => {
-    // ADMIN cannot create SUPER_ADMIN or ADMIN
-    if (adminRole === "ADMIN" && (payload.role === "SUPER_ADMIN" || payload.role === "ADMIN")) {
-      throw new Error("Admins cannot create users with SUPER_ADMIN or ADMIN roles.");
+    const adminAllowedRoles = [
+      "CATALOG_MANAGER",
+      "INVENTORY_MANAGER",
+      "ORDER_MANAGER",
+      "CUSTOMER_SUPPORT",
+      "MARKETING_MANAGER",
+      "FINANCE_MANAGER"
+    ];
+
+    if (adminRole === "ADMIN" && !adminAllowedRoles.includes(payload.role)) {
+      throw new Error(`Admins can only create: ${adminAllowedRoles.join(", ")}`);
+    }
+
+    if (adminRole === "SUPER_ADMIN" && payload.role === "SUPER_ADMIN") {
+      throw new Error("SUPER_ADMIN can only be seeded, not manually created.");
     }
 
     const hashedPassword = await bcrypt.hash(payload.password, 12);
@@ -113,7 +125,9 @@ export const UserService = {
         email: payload.email,
         password: hashedPassword,
         name: payload.name,
+        phone: payload.phone,
         role: payload.role,
+        forcePasswordChange: true, // Manually created users must change password
         profile: {
           create: { phone: payload.phone }
         }
@@ -134,6 +148,41 @@ export const UserService = {
 
     return prisma.user.delete({
       where: { id: userIdToDelete },
+    });
+  },
+
+  updateUserRole: async (userIdToUpdate: string, newRole: string, adminRole: string) => {
+    const user = await prisma.user.findUnique({ where: { id: userIdToUpdate } });
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const adminAllowedRoles = [
+      "CATALOG_MANAGER",
+      "INVENTORY_MANAGER",
+      "ORDER_MANAGER",
+      "CUSTOMER_SUPPORT",
+      "MARKETING_MANAGER",
+      "FINANCE_MANAGER",
+      "CUSTOMER"
+    ];
+
+    if (adminRole === "ADMIN") {
+      if (user.role === "SUPER_ADMIN" || user.role === "ADMIN") {
+         throw new Error("Admins cannot change the role of SUPER_ADMIN or ADMIN.");
+      }
+      if (!adminAllowedRoles.includes(newRole)) {
+        throw new Error(`Admins can only assign: ${adminAllowedRoles.join(", ")}`);
+      }
+    }
+
+    if (adminRole === "SUPER_ADMIN" && newRole === "SUPER_ADMIN") {
+      throw new Error("Cannot assign SUPER_ADMIN role dynamically.");
+    }
+
+    return prisma.user.update({
+      where: { id: userIdToUpdate },
+      data: { role: newRole as any },
     });
   },
 };

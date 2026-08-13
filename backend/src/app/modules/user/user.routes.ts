@@ -17,5 +17,6 @@ router.delete("/addresses/:id", auth(), UserController.deleteAddress);
 // Admin routes
 router.post("/", auth("SUPER_ADMIN", "ADMIN"), UserController.createUser);
 router.delete("/:id", auth("SUPER_ADMIN", "ADMIN"), UserController.deleteUser);
+router.patch("/:id/role", auth("SUPER_ADMIN", "ADMIN"), UserController.updateUserRole);
 
 export const UserRoutes = router;

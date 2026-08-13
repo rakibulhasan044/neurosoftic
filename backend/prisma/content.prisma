@@ -44,6 +44,7 @@ model Banner {
   title     String
   imageUrl  String
   linkUrl   String?
+  position  String   @default("HERO") // HERO, PROMO, etc.
   isActive  Boolean  @default(true)
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())

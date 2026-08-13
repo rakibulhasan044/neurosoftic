@@ -27,4 +27,18 @@ export const AuthController = {
       res.status(401).json({ success: false, message: err.message });
     }
   },
+
+  changePassword: async (req: Request, res: Response) => {
+    try {
+      const userId = (req as any).user.userId;
+      const result = await AuthService.changePassword(userId, req.body);
+      res.status(200).json({
+        success: true,
+        message: "Password changed successfully",
+        data: result,
+      });
+    } catch (err: any) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  }
 };

@@ -90,4 +90,16 @@ export const UserController = {
       res.status(400).json({ success: false, message: error.message });
     }
   },
+
+  updateUserRole: async (req: Request, res: Response) => {
+    try {
+      const adminRole = (req as any).user.role;
+      const { id } = req.params;
+      const { role } = req.body;
+      const user = await UserService.updateUserRole(id, role, adminRole);
+      res.status(200).json({ success: true, message: "Role updated successfully", data: user });
+    } catch (error: any) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  },
 };

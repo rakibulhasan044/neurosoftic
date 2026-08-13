@@ -13,10 +13,32 @@ export function Navbar() {
   const [userName, setUserName] = useState("");
   const [userRole, setUserRole] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [storeName, setStoreName] = useState("NEUROSOFTIC");
+  const [storeLogo, setStoreLogo] = useState<string | null>(null);
+
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Fetch store settings
+    const fetchStoreSettings = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/store-settings`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.data?.identity?.companyName) {
+            setStoreName(data.data.identity.companyName.toUpperCase());
+          }
+          if (data.data?.theme?.logoUrl) {
+            setStoreLogo(data.data.theme.logoUrl);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch store settings", err);
+      }
+    };
+    fetchStoreSettings();
+
     const checkAuth = () => {
       const token = localStorage.getItem("token");
       const name = localStorage.getItem("userName");
@@ -77,9 +99,13 @@ export function Navbar() {
       <div className="container flex h-16 max-w-screen-2xl items-center px-4 mx-auto">
         <div className="mr-4 hidden md:flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="hidden font-bold sm:inline-block text-xl tracking-tight text-primary drop-shadow-sm">
-              NEUROSOFTIC
-            </span>
+            {storeLogo ? (
+               <img src={storeLogo} alt={storeName} className="h-8 w-auto" />
+            ) : (
+              <span className="hidden font-bold sm:inline-block text-xl tracking-tight text-primary drop-shadow-sm">
+                {storeName}
+              </span>
+            )}
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
             <Link
@@ -91,14 +117,16 @@ export function Navbar() {
           </nav>
         </div>
         <Sheet>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
-            >
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle Menu</span>
-            </Button>
+          <SheetTrigger 
+            render={
+              <Button
+                variant="ghost"
+                className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
+              />
+            }
+          >
+            <Menu className="h-6 w-6" />
+            <span className="sr-only">Toggle Menu</span>
           </SheetTrigger>
           <SheetContent side="left" className="pr-0 bg-background">
             <Link
@@ -171,11 +199,14 @@ export function Navbar() {
                 )}
               </div>
             ) : (
-              <Button variant="ghost" size="icon" className="w-9 px-0 hover:bg-transparent hidden sm:flex" asChild>
-                <Link href="/auth">
-                  <User className="h-5 w-5 hover:text-primary transition-colors" />
-                  <span className="sr-only">Account</span>
-                </Link>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="w-9 px-0 hover:bg-transparent hidden sm:flex"
+                render={<Link href="/auth" />}
+              >
+                <User className="h-5 w-5 hover:text-primary transition-colors" />
+                <span className="sr-only">Account</span>
               </Button>
             )}
             <CartSheet />
