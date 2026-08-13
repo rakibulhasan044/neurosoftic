@@ -1,0 +1,58 @@
+model OrderStatusHistory {
+  id        String      @id @default(uuid())
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    OrderStatus
+  note      String?
+  createdAt DateTime    @default(now())
+}
+
+model PaymentAllocation {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount      Float
+  method      String
+  reference   String?
+  createdAt   DateTime @default(now())
+}
+
+model CourierProvider {
+  id        String     @id @default(uuid())
+  name      String     @unique
+  isActive  Boolean    @default(true)
+  config    Json?
+  shipments Shipment[]
+}
+
+model Shipment {
+  id             String          @id @default(uuid())
+  orderId        String
+  order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  providerId     String
+  provider       CourierProvider @relation(fields: [providerId], references: [id])
+  trackingNumber String?
+  status         String
+  events         ShipmentEvent[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model ShipmentEvent {
+  id         String   @id @default(uuid())
+  shipmentId String
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  status     String
+  location   String?
+  timestamp  DateTime
+}
+
+model ReturnRequest {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  reason    String
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

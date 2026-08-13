@@ -1,0 +1,26 @@
+model AttributeGroup {
+  id        String           @id @default(uuid())
+  name      String           @unique
+  values    AttributeValue[]
+  createdAt DateTime         @default(now())
+}
+
+model AttributeValue {
+  id        String         @id @default(uuid())
+  groupId   String
+  group     AttributeGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  value     String
+  createdAt DateTime       @default(now())
+
+  @@unique([groupId, value])
+}
+
+model Design {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}

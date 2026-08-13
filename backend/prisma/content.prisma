@@ -1,0 +1,93 @@
+model Media {
+  id        String   @id @default(uuid())
+  url       String
+  publicId  String?
+  format    String?
+  size      Int?
+  altText   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CMSPage {
+  id        String   @id @default(uuid())
+  title     String
+  slug      String   @unique
+  content   String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Homepage {
+  id        String             @id @default(uuid())
+  name      String
+  isActive  Boolean            @default(false)
+  sections  HomepageSection[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+}
+
+model HomepageSection {
+  id         String   @id @default(uuid())
+  homepageId String
+  homepage   Homepage @relation(fields: [homepageId], references: [id], onDelete: Cascade)
+  type       String   // e.g. HERO, FEATURED_PRODUCTS, BANNER
+  title      String?
+  content    Json?
+  sortOrder  Int      @default(0)
+  isActive   Boolean  @default(true)
+}
+
+model Banner {
+  id        String   @id @default(uuid())
+  title     String
+  imageUrl  String
+  linkUrl   String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Menu {
+  id        String   @id @default(uuid())
+  name      String
+  position  String   // e.g. HEADER, FOOTER
+  items     Json     // Array of menu items with labels and links
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FAQ {
+  id        String   @id @default(uuid())
+  question  String
+  answer    String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+}
+
+model Testimonial {
+  id        String   @id @default(uuid())
+  name      String
+  content   String
+  rating    Int      @default(5)
+  imageUrl  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  rating    Int
+  comment   String?
+  isVerified Boolean @default(false)
+  status    String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

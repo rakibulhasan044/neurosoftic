@@ -1,0 +1,55 @@
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String?
+  name      String
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  profile       CustomerProfile?
+  addresses     Address[]
+  orders        Order[]
+  cart          Cart?
+  wishlist      Wishlist?
+  auditLogs      AuditLog[]
+  notifications  Notification[]
+  reviews        Review[]
+  socialAccounts SocialAccount[]
+  sessions       Session[]
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  CATALOG_MANAGER
+  INVENTORY_MANAGER
+  ORDER_MANAGER
+  CUSTOMER_SUPPORT
+  MARKETING_MANAGER
+  FINANCE_MANAGER
+  CUSTOMER
+}
+
+model CustomerProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Address {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  street     String
+  city       String
+  state      String
+  postalCode String
+  country    String
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
