@@ -20,6 +20,9 @@ export const OrderService = {
         where: { id: item.productVariantId },
       });
       if (!variant) throw new Error(`Variant ${item.productVariantId} not found`);
+      if (variant.stock < item.quantity) {
+        throw new Error(`Not enough stock for variant ${item.productVariantId}`);
+      }
       subTotal += variant.price * item.quantity;
     }
 
@@ -53,6 +56,18 @@ export const OrderService = {
       },
     });
 
+    // Decrease stock for each variant
+    for (const item of items) {
+      await prisma.productVariant.update({
+        where: { id: item.productVariantId },
+        data: {
+          stock: {
+            decrement: item.quantity
+          }
+        }
+      });
+    }
+
     if (dbPaymentMethod === "CASH_ON_DELIVERY" || dbPaymentMethod === "MANUAL") {
       // Just record pending payment and return success without stripe URL
       await prisma.payment.create({
@@ -77,7 +92,7 @@ export const OrderService = {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
-      success_url: successUrl || "http://localhost:3000/success",
+      success_url: `${successUrl || "http://localhost:3000/success"}?session_id={CHECKOUT_SESSION_ID}&order_id=${order.id}`,
       cancel_url: cancelUrl || "http://localhost:3000/cancel",
       client_reference_id: order.id,
       line_items: [
@@ -125,6 +140,21 @@ export const OrderService = {
         });
       }
     }
+  },
+
+  confirmPaymentLocally: async (orderId: string) => {
+    if (orderId) {
+      await prisma.order.update({
+        where: { id: orderId },
+        data: { status: "CONFIRMED" },
+      });
+
+      await prisma.payment.updateMany({
+        where: { orderId: orderId },
+        data: { status: "PAID" },
+      });
+    }
+    return { success: true };
   },
 
   getOrders: async (filters: any) => {
@@ -242,7 +272,7 @@ export const OrderService = {
         data: {
           orderId: id,
           status: status as any,
-          notes: "Status updated by admin"
+          note: "Status updated by admin"
         }
       });
       return tx.order.update({
@@ -250,6 +280,72 @@ export const OrderService = {
         data: { status: status as any }
       });
     });
+    return updated;
+  },
+
+  cancelOrder: async (userId: string, orderId: string) => {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        payment: true,
+        items: true
+      }
+    });
+
+    if (!order) throw new Error("Order not found");
+    if (order.userId !== userId && order.customerEmail !== userId) {
+      // If caller is not admin, ensure they own the order
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (order.userId !== userId && order.customerEmail !== user?.email) {
+        throw new Error("Unauthorized to cancel this order");
+      }
+    }
+
+    if (order.status === 'DELIVERED' || order.status === 'CANCELLED') {
+      throw new Error(`Cannot cancel an order that is already ${order.status}`);
+    }
+
+    let refundDeduction = 0;
+    if (order.status === 'SHIPPED') {
+      refundDeduction = order.shippingCost;
+    }
+    const refundAmount = order.payableAmount - refundDeduction;
+
+    const updated = await prisma.$transaction(async (tx) => {
+      // Restore stock
+      for (const item of order.items) {
+        await tx.productVariant.update({
+          where: { id: item.productVariantId },
+          data: {
+            stock: { increment: item.quantity }
+          }
+        });
+      }
+
+      // Record status history
+      await tx.orderStatusHistory.create({
+        data: {
+          orderId: order.id,
+          status: 'CANCELLED',
+          note: `Order cancelled by customer. Refund amount: ৳${refundAmount}${refundDeduction > 0 ? ` (Deducted ৳${refundDeduction} for shipping)` : ''}`
+        }
+      });
+
+      // Update payment if necessary
+      if (order.payment && order.payment.status === 'PAID') {
+        await tx.payment.update({
+          where: { id: order.payment.id },
+          data: { status: 'REFUNDED' }
+        });
+      }
+
+      // Update order status
+      return tx.order.update({
+        where: { id: order.id },
+        data: { status: 'CANCELLED' }
+      });
+    });
+
     return updated;
   }
 };

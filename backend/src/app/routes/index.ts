@@ -11,6 +11,8 @@ import { CollectionRoutes } from "../modules/collection/collection.routes";
 import { BarcodeRoutes } from "../modules/barcode/barcode.routes";
 import { DashboardRoutes } from "../modules/dashboard/dashboard.routes";
 import { InventoryRoutes } from "../modules/inventory/inventory.routes";
+import { ReviewRoutes } from "../modules/review/review.routes";
+import { WishlistRoutes } from "../modules/wishlist/wishlist.routes";
 
 const router = express.Router();
 
@@ -62,7 +64,15 @@ const moduleRoutes = [
   {
     path: "/inventory",
     route: InventoryRoutes,
-  }
+  },
+  {
+    path: "/reviews",
+    route: ReviewRoutes,
+  },
+  {
+    path: "/wishlist",
+    route: WishlistRoutes,
+  },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

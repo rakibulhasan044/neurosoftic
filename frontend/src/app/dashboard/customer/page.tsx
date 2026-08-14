@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
-import { Package, Clock, ShieldCheck, ArrowRight } from "lucide-react";
+import { Package, Clock, Heart, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 
 export default function CustomerDashboardPage() {
   const [profile, setProfile] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
+  const [wishlistCount, setWishlistCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,11 +21,14 @@ export default function CustomerDashboardPage() {
         return;
       }
       try {
-        const [profileRes, ordersRes] = await Promise.all([
+        const [profileRes, ordersRes, wishlistRes] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/user/profile`, {
             headers: { 'Authorization': `Bearer ${token}` }
           }),
-          fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/orders/me/orders?limit=3`, {
+          fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/orders/me/orders?limit=100`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/wishlist`, {
             headers: { 'Authorization': `Bearer ${token}` }
           })
         ]);
@@ -36,6 +40,10 @@ export default function CustomerDashboardPage() {
         if (ordersRes.ok) {
           const ordersData = await ordersRes.json();
           setOrders(ordersData.orders || []);
+        }
+        if (wishlistRes.ok) {
+          const wishlistData = await wishlistRes.json();
+          setWishlistCount(wishlistData.data?.items?.length || 0);
         }
       } catch (err) {
         console.error("Error fetching dashboard data", err);
@@ -62,7 +70,7 @@ export default function CustomerDashboardPage() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{orders.length > 0 ? orders.length + (orders.length === 3 ? '+' : '') : 0}</div>
+            <div className="text-2xl font-bold">{orders.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -76,11 +84,11 @@ export default function CustomerDashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Account Status</CardTitle>
-            <ShieldCheck className="h-4 w-4 text-primary" />
+            <CardTitle className="text-sm font-medium">Saved Items</CardTitle>
+            <Heart className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">Verified</div>
+            <div className="text-2xl font-bold text-primary">{wishlistCount}</div>
           </CardContent>
         </Card>
       </div>
@@ -101,7 +109,7 @@ export default function CustomerDashboardPage() {
           ) : (
             <>
               <div className="space-y-4">
-                {orders.map((order) => (
+                {orders.slice(0, 3).map((order) => (
                   <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between border rounded-lg p-4 gap-4">
                     <div>
                       <p className="font-semibold text-primary">#{order.id.slice(0, 8).toUpperCase()}</p>

@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { CartProvider } from "@/context/cart-context";
+import { WishlistProvider } from "@/context/wishlist-context";
 import { Toaster } from "@/components/ui/sonner";
 
 // Pre-load common fonts so they can be switched dynamically
@@ -58,12 +59,14 @@ export default async function RootLayout({
         className={`${inter.className} min-h-screen bg-background text-foreground antialiased flex flex-col`}
       >
         <CartProvider>
-          <Navbar />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
-          <Toaster richColors position="top-right" />
+          <WishlistProvider>
+            <Navbar />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+            <Toaster richColors position="top-right" />
+          </WishlistProvider>
         </CartProvider>
       </body>
     </html>

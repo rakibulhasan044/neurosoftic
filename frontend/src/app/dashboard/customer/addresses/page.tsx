@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function CustomerAddressesPage() {
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -37,7 +38,7 @@ export default function CustomerAddressesPage() {
           <h1 className="text-3xl font-bold tracking-tight">Saved Addresses</h1>
           <p className="text-muted-foreground mt-2">Manage your shipping and billing addresses.</p>
         </div>
-        <Button>
+        <Button onClick={() => toast.info("Address management coming soon!")}>
           <Plus className="mr-2 h-4 w-4" />
           Add Address
         </Button>

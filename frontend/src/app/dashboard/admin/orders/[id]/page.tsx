@@ -6,6 +6,7 @@ import { ArrowLeft, User, MapPin, CreditCard, Package } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import Image from "next/image";
+import { OrderStatusUpdate } from "./OrderStatusUpdate";
 
 async function getOrder(id: string) {
   try {
@@ -22,8 +23,9 @@ async function getOrder(id: string) {
   return null;
 }
 
-export default async function AdminOrderDetailPage({ params }: { params: { id: string } }) {
-  const order = await getOrder(params.id);
+export default async function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = await params;
+  const order = await getOrder(unwrappedParams.id);
 
   if (!order) {
     return (
@@ -49,11 +51,13 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3">
             Order #{order.id.slice(0, 8).toUpperCase()}
-            <Badge variant="outline" className="ml-2">{order.status}</Badge>
           </h1>
           <p className="text-muted-foreground text-sm">
             Placed on {format(new Date(order.createdAt), "PPP 'at' p")}
           </p>
+        </div>
+        <div className="ml-auto">
+          <OrderStatusUpdate orderId={order.id} currentStatus={order.status} />
         </div>
       </div>
 

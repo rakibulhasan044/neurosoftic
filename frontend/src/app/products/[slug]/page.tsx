@@ -3,11 +3,13 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, ShieldCheck, Truck, ArrowLeft, Check } from "lucide-react";
+import { ShoppingCart, ShieldCheck, Truck, Check, Heart, Star } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { ProductReviews } from "@/components/modules/products/ProductReviews";
+import { useWishlistContext } from "@/context/wishlist-context";
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -18,6 +20,9 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [activeImage, setActiveImage] = useState<string | null>(null);
+  const [isWishlisting, setIsWishlisting] = useState(false);
+  const { wishlistIds, addToWishlistContext, removeFromWishlistContext } = useWishlistContext();
+  const inWishlist = product ? wishlistIds.includes(product.id) : false;
 
   useEffect(() => {
     async function fetchProduct() {
@@ -91,6 +96,41 @@ export default function ProductDetailPage() {
     });
   };
 
+  const handleWishlistToggle = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Please login to add to wishlist");
+      return;
+    }
+
+    setIsWishlisting(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/wishlist/toggle`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ productId: product.id })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (data.added) {
+          addToWishlistContext(product.id);
+        } else {
+          removeFromWishlistContext(product.id);
+        }
+        toast.success(data.message);
+      } else {
+        toast.error(data.message || "Failed to update wishlist");
+      }
+    } catch (err) {
+      toast.error("An error occurred");
+    } finally {
+      setIsWishlisting(false);
+    }
+  };
+
   const hasVariants = product.variants && product.variants.length > 0;
   const currentPrice = selectedVariant ? selectedVariant.price : 0;
   const currentStock = selectedVariant ? selectedVariant.stock : 0;
@@ -148,6 +188,15 @@ export default function ProductDetailPage() {
         {/* Product Info */}
         <div className="flex flex-col">
           <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground mb-2">{product.name}</h1>
+          <div className="flex items-center gap-4 mb-4 text-sm">
+            <div className="flex items-center text-yellow-500 font-medium">
+              <Star className="h-4 w-4 fill-current mr-1" />
+              {product.avgRating || "0.0"} ({product._count?.reviews || 0} reviews)
+            </div>
+            <div className="text-muted-foreground border-l border-border pl-4">
+              {product.totalOrders || 0} orders
+            </div>
+          </div>
           <div className="flex items-center gap-4 mb-6">
             {product.brand && <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{product.brand.name}</span>}
             {currentSku && <span className="text-xs bg-muted px-2 py-1 rounded font-mono text-muted-foreground">SKU: {currentSku}</span>}
@@ -209,15 +258,26 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
-              <Button 
-                size="lg" 
-                className="flex-1 h-14 text-lg font-semibold rounded-md shadow-lg" 
-                onClick={handleAddToCart}
-                disabled={currentStock === 0}
-              >
-                <ShoppingCart className="mr-2 h-5 w-5" /> 
-                {currentStock === 0 ? "Out of Stock" : "Add to Cart"}
-              </Button>
+              <div className="flex gap-2 flex-1">
+                <Button 
+                  size="lg" 
+                  className="flex-1 h-14 text-lg font-semibold rounded-md shadow-lg" 
+                  onClick={handleAddToCart}
+                  disabled={currentStock === 0}
+                >
+                  <ShoppingCart className="mr-2 h-5 w-5" /> 
+                  {currentStock === 0 ? "Out of Stock" : "Add to Cart"}
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-14 w-14 rounded-md"
+                  onClick={handleWishlistToggle}
+                  disabled={isWishlisting}
+                >
+                  <Heart className={`h-6 w-6 ${inWishlist ? "fill-red-500 text-red-500" : ""}`} />
+                </Button>
+              </div>
             </div>
             
             {currentStock > 0 && currentStock <= 10 && (
@@ -250,6 +310,9 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Reviews Section */}
+      <ProductReviews productId={product.id} />
     </div>
   );
 }

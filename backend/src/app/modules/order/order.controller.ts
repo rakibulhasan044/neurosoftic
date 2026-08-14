@@ -27,6 +27,16 @@ export const OrderController = {
     }
   },
 
+  confirmPayment: async (req: Request, res: Response) => {
+    try {
+      const { orderId } = req.body;
+      const result = await OrderService.confirmPaymentLocally(orderId);
+      res.status(200).json({ success: true, message: "Payment confirmed", data: result });
+    } catch (err: any) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
   getOrders: async (req: Request, res: Response) => {
     try {
       const result = await OrderService.getOrders(req.query);
@@ -64,6 +74,20 @@ export const OrderController = {
       const { status } = req.body;
       const result = await OrderService.updateOrderStatus(req.params.id, status);
       res.status(200).json({ success: true, data: result });
+    } catch (err: any) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  cancelOrder: async (req: Request, res: Response) => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        res.status(401).json({ success: false, message: "Unauthorized" });
+        return;
+      }
+      const result = await OrderService.cancelOrder(userId, req.params.id);
+      res.status(200).json({ success: true, message: "Order cancelled successfully", data: result });
     } catch (err: any) {
       res.status(400).json({ success: false, message: err.message });
     }

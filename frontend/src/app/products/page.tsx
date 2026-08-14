@@ -2,8 +2,8 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Filter } from "lucide-react";
+import { ProductCard } from "@/components/modules/products/ProductCard";
 
 export const metadata: Metadata = {
   title: "All Products | Neurosoftic",
@@ -44,59 +44,9 @@ export default async function ProductsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {products.map((product: any) => {
-            // Find base price from variants
-            const basePrice = product.variants?.length > 0 ? Math.min(...product.variants.map((v: any) => v.price)) : 0;
-            const totalStock = product.variants?.reduce((sum: number, v: any) => sum + v.stock, 0) || 0;
-            const primaryImage = product.media?.find((m: any) => m.isPrimary)?.url || product.media?.[0]?.url || null;
-
-            return (
-              <Link href={`/products/${product.slug}`} key={product.id} className="group">
-                <Card className="h-full flex flex-col overflow-hidden border-border/50 bg-card hover:border-primary/50 transition-colors duration-300 shadow-sm">
-                  <div className="aspect-square relative overflow-hidden bg-muted">
-                    {primaryImage ? (
-                      <Image 
-                        src={primaryImage} 
-                        alt={product.name} 
-                        fill 
-                        className="object-cover group-hover:scale-105 transition-transform duration-500" 
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-muted-foreground bg-secondary/20 group-hover:scale-105 transition-transform duration-500">
-                        Image Not Available
-                      </div>
-                    )}
-                    {totalStock < 20 && totalStock > 0 && (
-                      <div className="absolute top-3 left-3 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded">
-                        Low Stock
-                      </div>
-                    )}
-                    {totalStock === 0 && (
-                      <div className="absolute top-3 left-3 bg-destructive text-destructive-foreground text-xs font-bold px-2 py-1 rounded">
-                        Out of Stock
-                      </div>
-                    )}
-                  </div>
-                  <CardContent className="p-5 flex-1 flex flex-col">
-                    <div className="text-xs text-primary font-semibold mb-1 uppercase tracking-wider">{product.category?.name || "Uncategorized"}</div>
-                    <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors line-clamp-1">{product.name}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
-                      {product.description || "No description available."}
-                    </p>
-                    <div className="flex items-end justify-between mt-auto">
-                      <div>
-                        <div className="text-xs text-muted-foreground mb-1">Starting at</div>
-                        <div className="font-bold text-xl">${Number(basePrice).toFixed(2)}</div>
-                      </div>
-                      <div className="text-xs font-medium bg-secondary text-secondary-foreground px-2 py-1 rounded">
-                        {product.variants?.length || 0} Options
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            )
-          })}
+          {products.map((product: any) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
         </div>
       )}
     </div>

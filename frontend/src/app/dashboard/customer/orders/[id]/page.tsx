@@ -7,9 +7,12 @@ import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Package, Truck, CreditCard } from "lucide-react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { format } from "date-fns";
+import { CancelOrderDialog } from "./CancelOrderDialog";
 
-export default function CustomerOrderDetailsPage({ params }: { params: { id: string } }) {
+export default function CustomerOrderDetailsPage() {
+  const params = useParams();
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -44,13 +47,17 @@ export default function CustomerOrderDetailsPage({ params }: { params: { id: str
         <Link href="/dashboard/customer/orders" className={buttonVariants({ variant: "outline", size: "icon" })}>
           <ArrowLeft className="h-4 w-4" />
         </Link>
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl font-bold tracking-tight">
             Order #{order.id.slice(0, 8).toUpperCase()}
           </h1>
           <p className="text-muted-foreground text-sm">
             Placed on {format(new Date(order.createdAt), "PPP 'at' p")}
           </p>
+        </div>
+        <div className="flex gap-2 items-center">
+          <Badge variant="outline" className="px-3 py-1 text-sm">{order.status.replace("_", " ")}</Badge>
+          <CancelOrderDialog orderId={order.id} status={order.status} shippingCost={order.shippingCost} />
         </div>
       </div>
 

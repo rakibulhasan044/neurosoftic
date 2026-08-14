@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Search, User, Menu, LogOut, LayoutDashboard } from "lucide-react";
+import { Search, User, Menu, LogOut, LayoutDashboard, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { CartSheet } from "@/components/cart-sheet";
@@ -212,6 +212,12 @@ export function Navbar() {
                 <span className="sr-only">Account</span>
               </Button>
             )}
+            <Link href="/dashboard/customer/wishlist">
+              <Button variant="ghost" size="icon" className="w-9 px-0 hover:bg-transparent hidden sm:flex relative">
+                <Heart className="h-5 w-5 hover:text-primary transition-colors" />
+                <span className="sr-only">Wishlist</span>
+              </Button>
+            </Link>
             <CartSheet />
           </nav>
         </div>

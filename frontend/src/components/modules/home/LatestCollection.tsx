@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ProductCard } from "@/components/modules/products/ProductCard";
 
 export async function LatestCollection() {
   let products = [];
@@ -40,38 +40,9 @@ export async function LatestCollection() {
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {products.map((prod: any) => {
-            const primaryMedia = prod.media?.find((m: any) => m.isPrimary) || prod.media?.[0];
-            const price = prod.variants?.[0]?.price || 0;
-            return (
-            <Card key={prod.id} className="group overflow-hidden border-border/50 bg-card hover:border-primary/50 transition-colors duration-300">
-              <div className="aspect-square relative overflow-hidden bg-muted">
-                {primaryMedia ? (
-                  <img src={primaryMedia.url} alt={prod.name} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-muted-foreground bg-secondary/20 group-hover:scale-105 transition-transform duration-500">
-                    No Image
-                  </div>
-                )}
-                <div className="absolute top-2 left-2 px-2 py-1 bg-background/90 backdrop-blur-sm text-xs font-semibold rounded-md shadow-sm">
-                  NEW
-                </div>
-              </div>
-              <CardContent className="p-5">
-                <Link href={`/products/${prod.slug}`}>
-                  <h3 className="font-semibold text-lg mb-1 truncate group-hover:text-primary transition-colors">{prod.name}</h3>
-                </Link>
-                <p className="text-sm text-muted-foreground mb-3 truncate">{prod.category?.name || "Premium Product"}</p>
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-lg">${price.toFixed(2)}</span>
-                  <Link href={`/products/${prod.slug}`}>
-                    <Button variant="secondary" size="sm" className="rounded-full">View</Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-            );
-          })}
+          {products.map((prod: any) => (
+            <ProductCard key={prod.id} product={prod} showBadge="NEW" />
+          ))}
         </div>
         <div className="mt-10 flex justify-center sm:hidden">
           <Button variant="outline" className="w-full">View All Products</Button>

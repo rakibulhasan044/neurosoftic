@@ -85,9 +85,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const cartCount = items.reduce((count, item) => count + item.quantity, 0);
 
-  if (!isMounted) {
-    return null; // Prevents hydration mismatch
-  }
+  // No early return on server so children can render (SEO)
 
   return (
     <CartContext.Provider
