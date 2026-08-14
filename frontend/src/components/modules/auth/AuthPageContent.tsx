@@ -20,6 +20,7 @@ export function AuthPageContent() {
   }, [router]);
   
   // Login State
+  const [activeTab, setActiveTab] = useState("login");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
@@ -82,8 +83,7 @@ export function AuthPageContent() {
       if (res.ok && data.success) {
         toast.success("Account created successfully! Please login.");
         // Switch to login tab
-        const loginTrigger = document.querySelector('[value="login"]') as HTMLElement;
-        if (loginTrigger) loginTrigger.click();
+        setActiveTab("login");
       } else {
         toast.error(data.message || "Failed to register");
       }
@@ -97,7 +97,7 @@ export function AuthPageContent() {
   return (
     <div className="container mx-auto relative flex min-h-[calc(100vh-16rem)] flex-col items-center justify-center px-4 py-12">
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px]">
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs value={activeTab} onValueChange={(val) => val && setActiveTab(val)} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-8">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="register">Register</TabsTrigger>
