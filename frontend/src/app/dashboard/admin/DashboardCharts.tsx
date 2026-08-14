@@ -65,7 +65,7 @@ export function DashboardCharts({ statusCounts }: { statusCounts: any }) {
             <CardDescription>View your sales performance over time</CardDescription>
           </div>
           <div className="flex items-center gap-2">
-            <Select value={period} onValueChange={setPeriod}>
+            <Select value={period} onValueChange={(val) => val && setPeriod(val)}>
               <SelectTrigger className="w-[120px]">
                 <SelectValue placeholder="Period" />
               </SelectTrigger>
@@ -77,7 +77,7 @@ export function DashboardCharts({ statusCounts }: { statusCounts: any }) {
             </Select>
             
             {period !== "yearly" && (
-              <Select value={year} onValueChange={setYear}>
+              <Select value={year} onValueChange={(val) => val && setYear(val)}>
                 <SelectTrigger className="w-[100px]">
                   <SelectValue placeholder="Year" />
                 </SelectTrigger>
