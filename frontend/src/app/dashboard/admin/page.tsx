@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, DollarSign, ShoppingCart, Activity, PackageOpen, CheckCircle, Clock, XCircle } from "lucide-react";
 import { headers } from "next/headers";
+import { DashboardCharts } from "./DashboardCharts";
 
 async function getDashboardMetrics() {
   try {
@@ -80,69 +81,7 @@ export default async function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Sales Overview</CardTitle>
-          </CardHeader>
-          <CardContent className="pl-2 flex justify-center items-center h-[300px] bg-muted/20 border rounded-md m-4">
-            <p className="text-muted-foreground">Chart Implementation Placeholder</p>
-          </CardContent>
-        </Card>
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Order Status Pipeline</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              
-              <div className="flex items-center">
-                <div className="h-9 w-9 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                  <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">Pending Payment</p>
-                </div>
-                <div className="ml-auto font-medium text-blue-600">{statusCounts['PENDING_PAYMENT'] || 0}</div>
-              </div>
-
-              <div className="flex items-center">
-                <div className="h-9 w-9 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
-                  <PackageOpen className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                </div>
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">Processing & Packed</p>
-                </div>
-                <div className="ml-auto font-medium text-yellow-600">
-                  {(statusCounts['PROCESSING'] || 0) + (statusCounts['PACKED'] || 0)}
-                </div>
-              </div>
-
-              <div className="flex items-center">
-                <div className="h-9 w-9 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                </div>
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">Delivered</p>
-                </div>
-                <div className="ml-auto font-medium text-green-600">{statusCounts['DELIVERED'] || 0}</div>
-              </div>
-
-              <div className="flex items-center">
-                <div className="h-9 w-9 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                  <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                </div>
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">Cancelled</p>
-                </div>
-                <div className="ml-auto font-medium text-red-600">{statusCounts['CANCELLED'] || 0}</div>
-              </div>
-
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <DashboardCharts statusCounts={statusCounts} />
     </div>
   );
 }

@@ -1,4 +1,3 @@
-
 import { prisma } from "@/app/lib/prisma";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -46,6 +45,7 @@ export const AuthService = {
 
     return { user, token };
   },
+
 
   changePassword: async (userId: string, payload: any) => {
     const user = await prisma.user.findUnique({ where: { id: userId } });

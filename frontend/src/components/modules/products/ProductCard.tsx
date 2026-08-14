@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Star, Heart } from "lucide-react";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useWishlistContext } from "@/context/wishlist-context";
 
@@ -38,10 +39,10 @@ export function ProductCard({ product, showBadge }: ProductCardProps) {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/wishlist/toggle`, {
         method: "POST",
-        headers: {
+        headers: { 
+        "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
+          },
         body: JSON.stringify({ productId: product.id })
       });
       const data = await res.json();
@@ -64,8 +65,12 @@ export function ProductCard({ product, showBadge }: ProductCardProps) {
 
   return (
     <Link href={`/products/${product.slug}`} className="group h-full flex">
-      <Card className="w-full flex flex-col overflow-hidden border-border/50 bg-card hover:border-primary/50 transition-colors duration-300 shadow-sm relative">
-        <div className="aspect-square relative overflow-hidden bg-muted">
+      <motion.div 
+        whileHover={{ y: -5, transition: { duration: 0.2, ease: "easeOut" } }}
+        className="w-full flex"
+      >
+        <Card className="w-full flex flex-col overflow-hidden border-border/50 bg-card group-hover:border-primary/50 group-hover:shadow-md transition-colors duration-300 shadow-sm relative">
+          <div className="aspect-square relative overflow-hidden bg-muted">
           {primaryImage ? (
             <Image 
               src={primaryImage} 
@@ -125,7 +130,7 @@ export function ProductCard({ product, showBadge }: ProductCardProps) {
           <div className="flex items-end justify-between mt-auto">
             <div>
               <div className="text-xs text-muted-foreground mb-1">Starting at</div>
-              <div className="font-bold text-xl">${Number(basePrice).toFixed(2)}</div>
+              <div className="font-bold text-xl">৳{Number(basePrice).toFixed(2)}</div>
             </div>
             <div className="text-xs font-medium bg-secondary text-secondary-foreground px-2 py-1 rounded">
               {product.variants?.length || 0} Options
@@ -133,6 +138,7 @@ export function ProductCard({ product, showBadge }: ProductCardProps) {
           </div>
         </CardContent>
       </Card>
+      </motion.div>
     </Link>
   );
 }

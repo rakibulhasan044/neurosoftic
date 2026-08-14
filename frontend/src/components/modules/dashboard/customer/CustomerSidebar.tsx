@@ -38,8 +38,7 @@ export function CustomerSidebar() {
     if (!token) return;
 
     fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/user/profile`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
+      headers: { "Authorization": `Bearer ${token}` }})
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -67,9 +66,9 @@ export function CustomerSidebar() {
       <div className="flex-1 py-8">
         <div className="px-6 mb-8 text-center">
           <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold mx-auto mb-4">
-            {getInitials(profile?.name || localStorage.getItem("userName") || "")}
+            {getInitials(profile?.name || (typeof window !== 'undefined' ? localStorage.getItem("userName") : "") || "")}
           </div>
-          <h2 className="font-semibold text-lg">{profile?.name || localStorage.getItem("userName") || "Customer"}</h2>
+          <h2 className="font-semibold text-lg">{profile?.name || (typeof window !== 'undefined' ? localStorage.getItem("userName") : "") || "Customer"}</h2>
           <p className="text-sm text-muted-foreground">{profile?.email || ""}</p>
         </div>
         

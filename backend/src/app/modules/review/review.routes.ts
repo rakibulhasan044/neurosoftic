@@ -4,6 +4,7 @@ import auth from "../../middlewares/auth";
 
 const router = express.Router();
 
+router.get("/", ReviewController.getAllReviews);
 router.post("/", auth(), ReviewController.createReview);
 router.get("/product/:productId", ReviewController.getProductReviews);
 

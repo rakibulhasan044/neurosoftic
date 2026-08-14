@@ -23,14 +23,11 @@ export default function CustomerDashboardPage() {
       try {
         const [profileRes, ordersRes, wishlistRes] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/user/profile`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
+            headers: { "Authorization": `Bearer ${token}` }}),
           fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/orders/me/orders?limit=100`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
+            headers: { "Authorization": `Bearer ${token}` }}),
           fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/wishlist`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          })
+            headers: { "Authorization": `Bearer ${token}` }})
         ]);
 
         if (profileRes.ok) {

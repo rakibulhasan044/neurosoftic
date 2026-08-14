@@ -8,6 +8,7 @@ model Collection {
   isActive  Boolean   @default(true)
   startDate DateTime?
   endDate   DateTime?
+  products  Product[] @relation("ProductToCollection")
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }

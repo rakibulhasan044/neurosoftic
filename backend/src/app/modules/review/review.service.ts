@@ -56,6 +56,16 @@ export const ReviewService = {
     return review;
   },
 
+  getAllReviews: async (limit: number = 4) => {
+    return await prisma.review.findMany({
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: { select: { name: true } }
+      }
+    });
+  },
+
   getProductReviews: async (productId: string, filters: any) => {
     const { page = 1, limit = 5 } = filters;
     const skip = (page - 1) * limit;

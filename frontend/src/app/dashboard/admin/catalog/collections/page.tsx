@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,38 +35,27 @@ import { toast } from "sonner";
 import Image from "next/image";
 
 export default function CollectionsPage() {
-  const [collections, setCollections] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: collections = [], isLoading, mutate } = useSWR(
+    `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/collections`,
+    fetcher
+  );
   
+  const { data: products = [] } = useSWR(
+    `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/products`,
+    fetcher
+  );
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: "", description: "", banner: "" });
+  const [formData, setFormData] = useState<{name: string, description: string, banner: string, productIds: string[]}>({ name: "", description: "", banner: "", productIds: [] });
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    fetchCollections();
-  }, []);
-
-  const fetchCollections = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/collections`);
-      const data = await res.json();
-      if (data.success) {
-        setCollections(data.data);
-      }
-    } catch (error) {
-      toast.error("Failed to fetch collections");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const openCreateDialog = () => {
     setEditingId(null);
-    setFormData({ name: "", description: "", banner: "" });
+    setFormData({ name: "", description: "", banner: "", productIds: [] });
     setIsDialogOpen(true);
   };
 
@@ -73,7 +64,8 @@ export default function CollectionsPage() {
     setFormData({ 
       name: col.name || "", 
       description: col.description || "", 
-      banner: col.banner || "" 
+      banner: col.banner || "",
+      productIds: col.products?.map((p: any) => p.id) || []
     });
     setIsDialogOpen(true);
   };
@@ -90,7 +82,7 @@ export default function CollectionsPage() {
       
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/upload`, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${token}` },
+        headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
         body: fd
       });
       
@@ -110,55 +102,66 @@ export default function CollectionsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const token = localStorage.getItem("token");
-      const method = editingId ? "PATCH" : "POST";
-      const url = editingId 
-        ? `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/collections/${editingId}`
-        : `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/collections`;
+    const token = localStorage.getItem("token");
+    const method = editingId ? "PATCH" : "POST";
+    const url = editingId 
+      ? `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/collections/${editingId}`
+      : `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/collections`;
 
+    // Optimistic Update
+    const optimisticData = editingId 
+      ? collections.map((c: any) => c.id === editingId ? { ...c, ...formData } : c)
+      : [...collections, { id: `temp-${Date.now()}`, ...formData }];
+      
+    mutate(optimisticData, false);
+    setIsDialogOpen(false);
+
+    try {
       const res = await fetch(url, {
         method,
         headers: { 
+        "Authorization": `Bearer ${token}`, 
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` 
-        },
+          },
         body: JSON.stringify(formData)
       });
       const data = await res.json();
       
       if (data.success) {
         toast.success(`Collection ${editingId ? 'updated' : 'created'} successfully`);
-        setIsDialogOpen(false);
-        fetchCollections();
+        mutate();
       } else {
         toast.error(data.message || `Failed to ${editingId ? 'update' : 'create'} collection`);
+        mutate();
       }
     } catch (err) {
       toast.error("An error occurred");
+      mutate();
     }
   };
 
   const deleteCollection = async () => {
     if (!deleteId) return;
+    const currentDeleteId = deleteId;
+    setDeleteId(null);
+    
+    mutate(collections.filter((c: any) => c.id !== currentDeleteId), false);
+    
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/collections/${deleteId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/collections/${currentDeleteId}`, {
         method: "DELETE",
-        headers: { "Authorization": `Bearer ${token}` }
-      });
+        headers: { "Authorization": `Bearer ${token}` }});
       if (res.ok) {
-        toast.success("Collection deleted securely", {
-          description: "The collection has been permanently removed."
-        });
-        fetchCollections();
+        toast.success("Collection deleted securely");
+        mutate();
       } else {
         toast.error("Failed to delete collection");
+        mutate();
       }
     } catch (err) {
       toast.error("An error occurred");
-    } finally {
-      setDeleteId(null);
+      mutate();
     }
   };
 
@@ -230,6 +233,37 @@ export default function CollectionsPage() {
                   placeholder="Collection description" 
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label>Products in Collection</Label>
+                <div className="border rounded-md p-4 max-h-48 overflow-y-auto space-y-2 bg-muted/20">
+                  {products.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No products available.</p>
+                  ) : (
+                    products.map(product => (
+                      <div key={product.id} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id={`product-${product.id}`}
+                          checked={formData.productIds.includes(product.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFormData({ ...formData, productIds: [...formData.productIds, product.id] });
+                            } else {
+                              setFormData({ ...formData, productIds: formData.productIds.filter(id => id !== product.id) });
+                            }
+                          }}
+                          className="rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <label htmlFor={`product-${product.id}`} className="text-sm cursor-pointer">
+                          {product.name}
+                        </label>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
               <Button type="submit" className="w-full" disabled={isUploading}>
                 {editingId ? "Update Collection" : "Create Collection"}
               </Button>
@@ -245,6 +279,7 @@ export default function CollectionsPage() {
               <TableHead className="w-[100px]">Banner</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Slug</TableHead>
+              <TableHead>Products</TableHead>
               <TableHead>Schedule</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -275,6 +310,7 @@ export default function CollectionsPage() {
                   </TableCell>
                   <TableCell className="font-medium">{col.name}</TableCell>
                   <TableCell className="text-muted-foreground">{col.slug}</TableCell>
+                  <TableCell>{col._count?.products || 0}</TableCell>
                   <TableCell>
                     {col.startDate ? new Date(col.startDate).toLocaleDateString() : 'Always'}
                   </TableCell>

@@ -23,8 +23,7 @@ export default function CustomerOrderDetailsPage() {
 
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/orders/${params.id}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+          headers: { "Authorization": `Bearer ${token}` }});
         if (res.ok) {
           const data = await res.json();
           setOrder(data.data);

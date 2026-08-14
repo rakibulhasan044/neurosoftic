@@ -107,10 +107,10 @@ export default function ProductDetailPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/wishlist/toggle`, {
         method: "POST",
-        headers: {
+        headers: { 
+        "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
+          },
         body: JSON.stringify({ productId: product.id })
       });
       const data = await res.json();
@@ -202,7 +202,7 @@ export default function ProductDetailPage() {
             {currentSku && <span className="text-xs bg-muted px-2 py-1 rounded font-mono text-muted-foreground">SKU: {currentSku}</span>}
           </div>
           
-          <div className="text-3xl font-bold text-primary mb-6">${Number(currentPrice).toFixed(2)}</div>
+          <div className="text-3xl font-bold text-primary mb-6">৳{Number(currentPrice).toFixed(2)}</div>
           
           <div className="prose prose-sm dark:prose-invert text-muted-foreground mb-8">
             <p>{product.description || "No description provided."}</p>

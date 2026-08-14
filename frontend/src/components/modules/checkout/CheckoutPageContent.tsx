@@ -243,7 +243,7 @@ export function CheckoutPageContent() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="text-sm font-medium line-clamp-2">{item.name}</h4>
-                        <p className="text-sm font-semibold text-muted-foreground mt-1">${item.price.toFixed(2)}</p>
+                        <p className="text-sm font-semibold text-muted-foreground mt-1">৳{item.price.toFixed(2)}</p>
                       </div>
                     </div>
                   ))}

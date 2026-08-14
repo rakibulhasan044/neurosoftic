@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { StoreSettingsService } from "./store-settings.service";
 
 export const StoreSettingsController = {
-  getStoreSettings: async (req: Request, res: Response) => {
+  getStoreSettings: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await StoreSettingsService.getStoreSettings();
       res.status(200).json({
@@ -11,11 +11,11 @@ export const StoreSettingsController = {
         data: result,
       });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   },
 
-  updateStoreSettings: async (req: Request, res: Response) => {
+  updateStoreSettings: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await StoreSettingsService.updateStoreSettings(req.body);
       res.status(200).json({
@@ -24,7 +24,7 @@ export const StoreSettingsController = {
         data: result,
       });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   },
 };

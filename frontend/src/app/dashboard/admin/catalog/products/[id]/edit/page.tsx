@@ -98,7 +98,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       const token = localStorage.getItem("token");
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/barcodes/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        headers: { 
+        "Authorization": `Bearer ${token}`, "Content-Type": "application/json", },
         body: JSON.stringify({ categoryId: formData.categoryId, variantCode: variants[index].variantCode })
       });
       const data = await res.json();
@@ -128,7 +129,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/upload`, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${token}` },
+        headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
         body: fd
       });
       
@@ -153,6 +154,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     try {
       const payload = {
         ...formData,
+        brandId: formData.brandId === "" ? null : formData.brandId,
         variants: {
           update: variants.filter(v => v.id).map(v => ({
             where: { id: v.id },
@@ -186,10 +188,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       const token = localStorage.getItem("token");
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/products/${productId}`, {
         method: "PATCH",
-        headers: {
+        headers: { 
+        "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
+          },
         body: JSON.stringify(payload)
       });
       
@@ -357,7 +359,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     }} />
                   </div>
                   <div className="col-span-2 space-y-2">
-                    <Label>Price ($)</Label>
+                    <Label>Price (৳)</Label>
                     <Input type="number" required min="0" step="0.01" value={variant.price || 0} onChange={e => {
                       const newV = [...variants];
                       newV[index].price = parseFloat(e.target.value);

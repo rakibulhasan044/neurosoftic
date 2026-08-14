@@ -9,7 +9,10 @@ export const CategoryService = {
   },
   getAll: async () => {
     return await prisma.category.findMany({
-      include: { children: true }
+      include: { 
+        children: true,
+        _count: { select: { products: true } }
+      }
     });
   },
   getBySlug: async (slug: string) => {

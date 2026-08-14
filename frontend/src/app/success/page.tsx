@@ -22,7 +22,8 @@ function SuccessContent() {
       // Simulate webhook confirmation for local testing
       fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/orders/confirm-payment`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+        "Authorization": `Bearer ${localStorage.getItem("token")}`, "Content-Type": "application/json" },
         body: JSON.stringify({ orderId })
       }).catch(console.error);
     }

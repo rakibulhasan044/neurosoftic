@@ -60,10 +60,10 @@ export function ProductReviews({ productId }: { productId: string }) {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/reviews`, {
         method: "POST",
-        headers: {
+        headers: { 
+        "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
+          },
         body: JSON.stringify({ productId, rating, comment })
       });
       const data = await res.json();

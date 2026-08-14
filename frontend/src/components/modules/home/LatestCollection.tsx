@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/modules/products/ProductCard";
+import { FadeIn, StaggerContainer, StaggerItem } from "@/components/animations/FadeIn";
 
 export async function LatestCollection() {
   let products = [];
@@ -9,8 +11,8 @@ export async function LatestCollection() {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/products`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
-      // sort by newest if we can, else just slice
-      products = data.data?.slice(0, 4) || [];
+      // sort by newest
+      products = (data.data || []).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 8);
     }
   } catch (error) {}
 
@@ -24,26 +26,30 @@ export async function LatestCollection() {
   }
 
   return (
-    <section className="py-20 bg-background border-t border-border/40">
+    <section className="py-20 bg-background border-t border-border/40 ">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-end mb-12">
-          <div>
-            <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-3">
-              New Arrivals
+        <FadeIn direction="up">
+          <div className="flex justify-between items-end mb-12 ">
+            <div>
+              <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-3">
+                New Arrivals
+              </div>
+              <h2 className="text-3xl font-bold tracking-tight text-foreground mb-2">Latest Collection</h2>
+              <p className="text-muted-foreground">The newest additions to our premium tech lineup.</p>
             </div>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground mb-2">Latest Collection</h2>
-            <p className="text-muted-foreground">The newest additions to our premium tech lineup.</p>
+            <Link href="/products?collection=new" className="hidden sm:flex items-center text-primary hover:text-primary/80 font-medium transition-colors">
+              View All <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
           </div>
-          <Link href="/products?collection=new" className="hidden sm:flex items-center text-primary hover:text-primary/80 font-medium transition-colors">
-            View All <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </div>
+        </FadeIn>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((prod: any) => (
-            <ProductCard key={prod.id} product={prod} showBadge="NEW" />
+            <StaggerItem key={prod.id}>
+              <ProductCard product={prod} showBadge="NEW" />
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
         <div className="mt-10 flex justify-center sm:hidden">
           <Button variant="outline" className="w-full">View All Products</Button>
         </div>

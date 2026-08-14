@@ -2,6 +2,9 @@ import { prisma } from "@/app/lib/prisma";
 
 export const ProductService = {
   createProduct: async (payload: any) => {
+    if (payload.brandId === "") {
+      payload.brandId = null;
+    }
     return await prisma.product.create({
       data: payload,
       include: {
@@ -13,8 +16,37 @@ export const ProductService = {
     });
   },
 
-  getAllProducts: async () => {
+  getAllProducts: async (query?: any) => {
+    const where: any = {};
+    if (query?.category) {
+      where.category = { slug: query.category };
+    }
+    if (query?.brand) {
+      where.brand = { slug: query.brand };
+    }
+    if (query?.search) {
+      where.OR = [
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { description: { contains: query.search, mode: 'insensitive' } },
+        { category: { name: { contains: query.search, mode: 'insensitive' } } },
+        { brand: { name: { contains: query.search, mode: 'insensitive' } } },
+      ];
+    }
+
+    let orderBy: any = { createdAt: "desc" };
+    if (query?.sort) {
+      if (query.sort === "price-asc") {
+        orderBy = { variants: { _min: { price: "asc" } } };
+      } else if (query.sort === "price-desc") {
+        orderBy = { variants: { _max: { price: "desc" } } };
+      } else if (query.sort === "newest") {
+        orderBy = { createdAt: "desc" };
+      }
+    }
+
     const products = await prisma.product.findMany({
+      where,
+      orderBy,
       include: {
         category: true,
         brand: true,
@@ -92,6 +124,9 @@ export const ProductService = {
   },
 
   updateProduct: async (id: string, payload: any) => {
+    if (payload.brandId === "") {
+      payload.brandId = null;
+    }
     return await prisma.product.update({
       where: { id },
       data: payload,

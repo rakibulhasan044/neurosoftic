@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,48 +27,35 @@ import { Plus, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: products = [], isLoading, mutate } = useSWR(
+    `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/products`,
+    fetcher
+  );
+  
   const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/products`);
-      const data = await res.json();
-      if (data.success) {
-        setProducts(data.data);
-      }
-    } catch (error) {
-      toast.error("Failed to fetch products");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const deleteProduct = async () => {
     if (!deleteId) return;
+    const currentDeleteId = deleteId;
+    setDeleteId(null);
+    
+    mutate(products.filter((p: any) => p.id !== currentDeleteId), false);
+    
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/products/${deleteId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/products/${currentDeleteId}`, {
         method: "DELETE",
-        headers: { "Authorization": `Bearer ${token}` }
-      });
+        headers: { "Authorization": `Bearer ${token}` }});
       if (res.ok) {
-        toast.success("Product deleted securely", {
-          description: "The product and all its variants have been removed."
-        });
-        fetchProducts();
+        toast.success("Product deleted securely");
+        mutate();
       } else {
         toast.error("Failed to delete product");
+        mutate();
       }
     } catch (err) {
       toast.error("An error occurred");
-    } finally {
-      setDeleteId(null);
+      mutate();
     }
   };
 

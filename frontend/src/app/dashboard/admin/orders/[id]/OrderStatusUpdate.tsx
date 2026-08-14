@@ -36,10 +36,10 @@ export function OrderStatusUpdate({ orderId, currentStatus }: { orderId: string,
       const token = localStorage.getItem("token");
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/orders/${orderId}/status`, {
         method: "PUT",
-        headers: {
+        headers: { 
+        "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
+          },
         body: JSON.stringify({ status })
       });
 

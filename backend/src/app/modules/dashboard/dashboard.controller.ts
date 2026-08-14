@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { DashboardService } from "./dashboard.service";
 
 export const DashboardController = {
-  getMetrics: async (req: Request, res: Response) => {
+  getMetrics: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await DashboardService.getMetrics();
       res.status(200).json({
@@ -11,7 +11,21 @@ export const DashboardController = {
         data: result,
       });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
+    }
+  },
+
+  getCharts: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const period = (req.query.period as string) || "monthly";
+      const year = (req.query.year as string) || new Date().getFullYear().toString();
+      const result = await DashboardService.getCharts(period, year);
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (err: any) {
+      next(err);
     }
   }
 };

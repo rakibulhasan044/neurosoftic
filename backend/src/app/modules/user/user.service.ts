@@ -185,4 +185,75 @@ export const UserService = {
       data: { role: newRole as any },
     });
   },
+
+  getCustomers: async (filters: any) => {
+    const { page = 1, limit = 50, search } = filters;
+    const skip = (page - 1) * limit;
+
+    const where: any = { role: "CUSTOMER" };
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip: Number(skip),
+        take: Number(limit),
+        orderBy: { createdAt: "desc" },
+        include: {
+          profile: true,
+          _count: { select: { orders: true } }
+        }
+      }),
+      prisma.user.count({ where })
+    ]);
+
+    return {
+      users,
+      meta: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / Number(limit))
+      }
+    };
+  },
+
+  getStaff: async (filters: any) => {
+    const { page = 1, limit = 50, search } = filters;
+    const skip = (page - 1) * limit;
+
+    const where: any = { role: { not: "CUSTOMER" } };
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip: Number(skip),
+        take: Number(limit),
+        orderBy: { createdAt: "desc" },
+        include: { profile: true }
+      }),
+      prisma.user.count({ where })
+    ]);
+
+    return {
+      users,
+      meta: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / Number(limit))
+      }
+    };
+  }
 };

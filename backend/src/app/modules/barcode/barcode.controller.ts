@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { BarcodeService } from "./barcode.service";
 
 export const BarcodeController = {
-  generate: async (req: Request, res: Response) => {
+  generate: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { categoryId, variantCode } = req.body;
       if (!categoryId || !variantCode) {
@@ -16,7 +16,7 @@ export const BarcodeController = {
         data: result
       });
     } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message });
+      next(error);
     }
   }
 };

@@ -4,15 +4,10 @@ import { HeroSlider } from "@/components/modules/home/HeroSlider";
 import { FeaturedCategories } from "@/components/modules/home/FeaturedCategories";
 import { LatestCollection } from "@/components/modules/home/LatestCollection";
 import { BestSellers } from "@/components/modules/home/BestSellers";
-import { PromotionalBanner } from "@/components/modules/home/PromotionalBanner";
 import { CollectionGrid } from "@/components/modules/home/CollectionGrid";
-import { SplitPromoBlock } from "@/components/modules/home/SplitPromoBlock";
 import { BrandStrip } from "@/components/modules/home/BrandStrip";
-import { EditorialStory } from "@/components/modules/home/EditorialStory";
 import { TrustUSP } from "@/components/modules/home/TrustUSP";
 import { Testimonials } from "@/components/modules/home/Testimonials";
-import { SocialFeed } from "@/components/modules/home/SocialFeed";
-import { Newsletter } from "@/components/modules/home/Newsletter";
 import { FAQSection } from "@/components/modules/home/FAQSection";
 
 async function getStoreBanners() {
@@ -39,17 +34,13 @@ export default async function Home() {
       <HeroSlider heroBanner={heroBanner} />
       <FeaturedCategories />
       <LatestCollection />
-      <PromotionalBanner />
       <CollectionGrid />
       <BestSellers />
-      <SplitPromoBlock promoBanner={promoBanner} />
+      {/* <SplitPromoBlock promoBanner={promoBanner} /> */}
       <BrandStrip />
-      <EditorialStory />
       <TrustUSP />
       <Testimonials />
-      <SocialFeed />
       <FAQSection />
-      <Newsletter />
     </div>
   );
 }

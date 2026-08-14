@@ -37,10 +37,7 @@ export function CancelOrderDialog({ orderId, status, shippingCost }: CancelOrder
       const token = localStorage.getItem("token");
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/orders/${orderId}/cancel`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
+        headers: { "Authorization": `Bearer ${token}` }});
 
       const data = await res.json();
       if (res.ok && data.success) {

@@ -60,10 +60,10 @@ export default function NewProductPage() {
       const token = localStorage.getItem("token");
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/barcodes/generate`, {
         method: "POST",
-        headers: {
+        headers: { 
+        "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
+          },
         body: JSON.stringify({
           categoryId: formData.categoryId,
           variantCode: variants[index].variantCode
@@ -97,7 +97,7 @@ export default function NewProductPage() {
       
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/upload`, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${token}` },
+        headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
         body: fd
       });
       
@@ -122,6 +122,7 @@ export default function NewProductPage() {
     try {
       const payload = {
         ...formData,
+        brandId: formData.brandId === "" ? null : formData.brandId,
         variants: {
           create: variants.map(v => ({
             sku: v.sku || `SKU-${Date.now()}-${Math.floor(Math.random()*1000)}`,
@@ -143,10 +144,10 @@ export default function NewProductPage() {
       const token = localStorage.getItem("token");
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/products`, {
         method: "POST",
-        headers: {
+        headers: { 
+        "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
+          },
         body: JSON.stringify(payload)
       });
       
@@ -309,7 +310,7 @@ export default function NewProductPage() {
                     }} />
                   </div>
                   <div className="col-span-2 space-y-2">
-                    <Label>Price ($)</Label>
+                    <Label>Price (৳)</Label>
                     <Input type="number" required min="0" step="0.01" value={variant.price} onChange={e => {
                       const newV = [...variants];
                       newV[index].price = parseFloat(e.target.value);

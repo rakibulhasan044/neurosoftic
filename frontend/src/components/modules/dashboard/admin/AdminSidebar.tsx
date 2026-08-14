@@ -20,7 +20,8 @@ import {
   Globe,
   Layout,
   Menu,
-  ShieldAlert
+  ShieldAlert,
+  Shield
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,8 +30,6 @@ const adminLinks = [
   { name: "Inventory", href: "/dashboard/admin/inventory", icon: Package },
   { name: "Orders", href: "/dashboard/admin/orders", icon: ShoppingBag },
   { name: "Customers", href: "/dashboard/admin/customers", icon: Users },
-  { name: "Support", href: "/dashboard/admin/support", icon: MessageSquare },
-  { name: "Reports", href: "/dashboard/admin/reports", icon: BarChart },
 ];
 
 const catalogLinks = [
@@ -45,8 +44,14 @@ const storeSettingsLinks = [
   { name: "Branding & Theme", href: "/dashboard/admin/store/branding", icon: Palette },
   { name: "Home Layout", href: "/dashboard/admin/store/home", icon: Layout },
   { name: "Navigation", href: "/dashboard/admin/store/navigation", icon: Menu },
+  { name: "FAQ", href: "/dashboard/admin/store/faq", icon: Layout },
+  { name: "About Page", href: "/dashboard/admin/store/about", icon: Layout },
   { name: "SEO Settings", href: "/dashboard/admin/store/seo", icon: BarChart },
   { name: "Legal & Policies", href: "/dashboard/admin/store/legal", icon: ShieldAlert },
+];
+
+const systemSettingsLinks = [
+  { name: "Staff Management", href: "/dashboard/admin/settings/staff", icon: Shield },
 ];
 
 export function AdminSidebar() {
@@ -54,8 +59,10 @@ export function AdminSidebar() {
   const router = useRouter();
   const isStoreActive = pathname.startsWith("/dashboard/admin/store");
   const isCatalogActive = pathname.startsWith("/dashboard/admin/catalog");
+  const isSystemActive = pathname.startsWith("/dashboard/admin/settings");
   const [storeOpen, setStoreOpen] = useState(isStoreActive);
   const [catalogOpen, setCatalogOpen] = useState(isCatalogActive);
+  const [systemOpen, setSystemOpen] = useState(isSystemActive);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -157,6 +164,49 @@ export function AdminSidebar() {
             {storeOpen && (
               <div className="mt-1 flex flex-col gap-1 pl-9 pr-2">
                 {storeSettingsLinks.map((link) => {
+                  const SubIcon = link.icon;
+                  const isActive = pathname === link.href;
+                  return (
+                    <Link
+                      key={link.name}
+                      href={link.href}
+                      className={cn(
+                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                        isActive 
+                          ? "bg-primary text-primary-foreground" 
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      <SubIcon className="h-3.5 w-3.5" />
+                      {link.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* System Settings Accordion */}
+          <div>
+            <button
+              onClick={() => setSystemOpen(!systemOpen)}
+              className={cn(
+                "w-full flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                isSystemActive && !systemOpen 
+                  ? "bg-primary/10 text-primary" 
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <Shield className="h-4 w-4" />
+                System Settings
+              </div>
+              {systemOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </button>
+            
+            {systemOpen && (
+              <div className="mt-1 flex flex-col gap-1 pl-9 pr-2">
+                {systemSettingsLinks.map((link) => {
                   const SubIcon = link.icon;
                   const isActive = pathname === link.href;
                   return (

@@ -23,8 +23,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/wishlist`, {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
+          headers: { "Authorization": `Bearer ${token}` }});
         const data = await res.json();
         if (res.ok && data.success) {
           const ids = data.data?.items?.map((item: any) => item.id) || [];

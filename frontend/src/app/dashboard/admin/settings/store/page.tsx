@@ -79,8 +79,8 @@ export default function StoreSettingsPage() {
         `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/upload`,
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
+          headers: { 
+            "Authorization": `Bearer ${token}`,
           },
           body: formData,
         },
@@ -106,9 +106,9 @@ export default function StoreSettingsPage() {
         `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/store-settings`,
         {
           method: "PATCH",
-          headers: {
+          headers: { 
+            "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             identity: { companyName },

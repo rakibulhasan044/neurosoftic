@@ -21,6 +21,7 @@ model Product {
   media       ProductMedia[]
   reviews     Review[]
   wishlists   Wishlist[]
+  collections Collection[]     @relation("ProductToCollection")
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 }

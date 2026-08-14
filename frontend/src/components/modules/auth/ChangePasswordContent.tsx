@@ -26,9 +26,9 @@ export function ChangePasswordContent() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/auth/change-password`, {
         method: "POST",
         headers: { 
+        "Authorization": `Bearer ${token}`, 
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
+          },
         body: JSON.stringify({ newPassword }),
       });
       const data = await res.json();

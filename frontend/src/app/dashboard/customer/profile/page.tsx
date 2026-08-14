@@ -23,8 +23,7 @@ export default function CustomerProfilePage() {
 
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/user/profile`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+          headers: { "Authorization": `Bearer ${token}` }});
         if (res.ok) {
           const data = await res.json();
           setProfile(data.data);
@@ -50,7 +49,7 @@ export default function CustomerProfilePage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/user/profile`, {
         method: 'PATCH',
         headers: { 
-          'Authorization': `Bearer ${token}` || '',
+        "Authorization": `Bearer ${token}`, 
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(formData)

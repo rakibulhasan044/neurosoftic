@@ -1,4 +1,4 @@
-import { prisma } from "@/app/lib/prisma";
+import { prisma } from "../../lib/prisma";
 
 export const InventoryService = {
   getInventory: async (filters: any) => {
@@ -16,7 +16,7 @@ export const InventoryService = {
         skip: Number(skip),
         take: Number(limit),
         include: {
-          product: { select: { name: true, image: true } }
+          product: { select: { name: true, media: true } }
         },
         orderBy: { stock: 'asc' }
       }),

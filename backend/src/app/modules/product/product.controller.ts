@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { ProductService } from "./product.service";
 
 export const ProductController = {
-  createProduct: async (req: Request, res: Response) => {
+  createProduct: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await ProductService.createProduct(req.body);
       res.status(201).json({
@@ -11,24 +11,24 @@ export const ProductController = {
         data: result,
       });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   },
 
-  getAllProducts: async (req: Request, res: Response) => {
+  getAllProducts: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = await ProductService.getAllProducts();
+      const result = await ProductService.getAllProducts(req.query);
       res.status(200).json({
         success: true,
         message: "Products fetched successfully",
         data: result,
       });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   },
 
-  getProductBySlug: async (req: Request, res: Response) => {
+  getProductBySlug: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await ProductService.getProductBySlug(req.params.slug);
       res.status(200).json({
@@ -37,11 +37,11 @@ export const ProductController = {
         data: result,
       });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   },
 
-  updateProduct: async (req: Request, res: Response) => {
+  updateProduct: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await ProductService.updateProduct(req.params.id, req.body);
       res.status(200).json({
@@ -50,11 +50,11 @@ export const ProductController = {
         data: result,
       });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   },
 
-  deleteProduct: async (req: Request, res: Response) => {
+  deleteProduct: async (req: Request, res: Response, next: NextFunction) => {
     try {
       await ProductService.deleteProduct(req.params.id);
       res.status(200).json({
@@ -62,7 +62,7 @@ export const ProductController = {
         message: "Product deleted successfully",
       });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   }
 };

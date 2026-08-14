@@ -1,51 +1,51 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { UserService } from "./user.service";
 import { UserValidation } from "./user.validation";
 
 export const UserController = {
-  getProfile: async (req: Request, res: Response) => {
+  getProfile: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = (req as any).user.userId;
       const profile = await UserService.getProfile(userId);
       res.status(200).json({ success: true, data: profile });
     } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message });
+      next(error);
     }
   },
 
-  updateProfile: async (req: Request, res: Response) => {
+  updateProfile: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = (req as any).user.userId;
       const validatedData = UserValidation.updateProfileSchema.parse(req.body);
       const updatedProfile = await UserService.updateProfile(userId, validatedData);
       res.status(200).json({ success: true, data: updatedProfile });
     } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message });
+      next(error);
     }
   },
 
-  getAddresses: async (req: Request, res: Response) => {
+  getAddresses: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = (req as any).user.userId;
       const addresses = await UserService.getAddresses(userId);
       res.status(200).json({ success: true, data: addresses });
     } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message });
+      next(error);
     }
   },
 
-  addAddress: async (req: Request, res: Response) => {
+  addAddress: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = (req as any).user.userId;
       const validatedData = UserValidation.addAddressSchema.parse(req.body);
       const address = await UserService.addAddress(userId, validatedData);
       res.status(201).json({ success: true, data: address });
     } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message });
+      next(error);
     }
   },
 
-  updateAddress: async (req: Request, res: Response) => {
+  updateAddress: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = (req as any).user.userId;
       const { id } = req.params;
@@ -53,45 +53,45 @@ export const UserController = {
       const address = await UserService.updateAddress(userId, id, validatedData);
       res.status(200).json({ success: true, data: address });
     } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message });
+      next(error);
     }
   },
 
-  deleteAddress: async (req: Request, res: Response) => {
+  deleteAddress: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = (req as any).user.userId;
       const { id } = req.params;
       await UserService.deleteAddress(userId, id);
       res.status(200).json({ success: true, message: "Address deleted successfully" });
     } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message });
+      next(error);
     }
   },
 
   // Admin Endpoints
-  createUser: async (req: Request, res: Response) => {
+  createUser: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const adminRole = (req as any).user.role;
       // Optionally validate payload with Zod here
       const user = await UserService.createUser(req.body, adminRole);
       res.status(201).json({ success: true, data: user });
     } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message });
+      next(error);
     }
   },
 
-  deleteUser: async (req: Request, res: Response) => {
+  deleteUser: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const adminRole = (req as any).user.role;
       const { id } = req.params;
       await UserService.deleteUser(id, adminRole);
       res.status(200).json({ success: true, message: "User deleted successfully" });
     } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message });
+      next(error);
     }
   },
 
-  updateUserRole: async (req: Request, res: Response) => {
+  updateUserRole: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const adminRole = (req as any).user.role;
       const { id } = req.params;
@@ -99,11 +99,11 @@ export const UserController = {
       const user = await UserService.updateUserRole(id, role, adminRole);
       res.status(200).json({ success: true, message: "Role updated successfully", data: user });
     } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message });
+      next(error);
     }
   },
 
-  createAdmin: async (req: Request, res: Response) => {
+  createAdmin: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await UserService.createAdmin(req.body);
       res.status(201).json({
@@ -112,16 +112,24 @@ export const UserController = {
         data: result,
       });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   },
 
-  getCustomers: async (req: Request, res: Response) => {
+  getCustomers: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await UserService.getCustomers(req.query);
       res.status(200).json({ success: true, ...result });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
+    }
+  },
+  getStaff: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await UserService.getStaff(req.query);
+      res.status(200).json({ success: true, ...result });
+    } catch (err: any) {
+      next(err);
     }
   }
 };

@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { OrderService } from "./order.service";
 
 export const OrderController = {
-  createOrder: async (req: Request, res: Response) => {
+  createOrder: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = (req as any).user?.userId; // Set by optionalAuth middleware
       
@@ -13,11 +13,11 @@ export const OrderController = {
         data: result,
       });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   },
 
-  stripeWebhook: async (req: Request, res: Response) => {
+  stripeWebhook: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const event = req.body;
       await OrderService.handleStripeWebhook(event);
@@ -27,26 +27,26 @@ export const OrderController = {
     }
   },
 
-  confirmPayment: async (req: Request, res: Response) => {
+  confirmPayment: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { orderId } = req.body;
       const result = await OrderService.confirmPaymentLocally(orderId);
       res.status(200).json({ success: true, message: "Payment confirmed", data: result });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   },
 
-  getOrders: async (req: Request, res: Response) => {
+  getOrders: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await OrderService.getOrders(req.query);
       res.status(200).json({ success: true, ...result });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   },
 
-  getMyOrders: async (req: Request, res: Response) => {
+  getMyOrders: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -56,30 +56,30 @@ export const OrderController = {
       const result = await OrderService.getMyOrders(userId, req.query);
       res.status(200).json({ success: true, ...result });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   },
 
-  getOrderById: async (req: Request, res: Response) => {
+  getOrderById: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await OrderService.getOrderById(req.params.id);
       res.status(200).json({ success: true, data: result });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   },
 
-  updateOrderStatus: async (req: Request, res: Response) => {
+  updateOrderStatus: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { status } = req.body;
       const result = await OrderService.updateOrderStatus(req.params.id, status);
       res.status(200).json({ success: true, data: result });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   },
 
-  cancelOrder: async (req: Request, res: Response) => {
+  cancelOrder: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -89,7 +89,7 @@ export const OrderController = {
       const result = await OrderService.cancelOrder(userId, req.params.id);
       res.status(200).json({ success: true, message: "Order cancelled successfully", data: result });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   }
 };

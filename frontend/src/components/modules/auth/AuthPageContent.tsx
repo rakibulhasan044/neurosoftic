@@ -95,23 +95,8 @@ export function AuthPageContent() {
   };
 
   return (
-    <div className="container relative min-h-[calc(100vh-16rem)] flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0 mx-auto">
-      <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
-        <div className="absolute inset-0 bg-primary/20 bg-[url('/hero-banner.jpg')] bg-cover bg-center bg-no-repeat grayscale-[30%] opacity-40 mix-blend-multiply" />
-        <div className="relative z-20 flex items-center text-lg font-medium">
-          <Link href="/">NEUROSOFTIC</Link>
-        </div>
-        <div className="relative z-20 mt-auto">
-          <blockquote className="space-y-2">
-            <p className="text-lg font-medium leading-relaxed">
-              &ldquo;This library has saved me countless hours of work and helped me deliver stunning designs to my clients faster than ever before.&rdquo;
-            </p>
-            <footer className="text-sm text-gray-300">Sofia Davis, Lead Designer</footer>
-          </blockquote>
-        </div>
-      </div>
-      <div className="lg:p-8 flex items-center justify-center py-12 px-4">
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px]">
+    <div className="container mx-auto relative flex min-h-[calc(100vh-16rem)] flex-col items-center justify-center px-4 py-12">
+      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[450px]">
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-8">
               <TabsTrigger value="login">Login</TabsTrigger>
@@ -157,19 +142,6 @@ export function AuthPageContent() {
                     </Button>
                   </CardContent>
                 </form>
-                <CardFooter className="flex flex-col gap-4">
-                  <div className="relative w-full">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t border-border" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                    </div>
-                  </div>
-                  <Button variant="outline" type="button" className="w-full h-11 bg-background">
-                    Google
-                  </Button>
-                </CardFooter>
               </Card>
             </TabsContent>
             
@@ -235,7 +207,6 @@ export function AuthPageContent() {
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
       </div>
     </div>
   );

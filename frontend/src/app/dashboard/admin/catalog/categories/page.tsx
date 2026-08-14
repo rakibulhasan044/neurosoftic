@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,8 +36,10 @@ import { toast } from "sonner";
 import Image from "next/image";
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: categories = [], isLoading, mutate } = useSWR(
+    `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/categories`,
+    fetcher
+  );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   
@@ -43,24 +47,6 @@ export default function CategoriesPage() {
   const [formData, setFormData] = useState({ name: "", prefix: "", description: "", image: "" });
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/categories`);
-      const data = await res.json();
-      if (data.success) {
-        setCategories(data.data);
-      }
-    } catch (error) {
-      toast.error("Failed to fetch categories");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const openCreateDialog = () => {
     setEditingId(null);
@@ -91,7 +77,7 @@ export default function CategoriesPage() {
       
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/upload`, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${token}` },
+        headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
         body: fd
       });
       
@@ -111,55 +97,66 @@ export default function CategoriesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const token = localStorage.getItem("token");
-      const method = editingId ? "PATCH" : "POST";
-      const url = editingId 
-        ? `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/categories/${editingId}`
-        : `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/categories`;
+    const token = localStorage.getItem("token");
+    const method = editingId ? "PATCH" : "POST";
+    const url = editingId 
+      ? `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/categories/${editingId}`
+      : `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/categories`;
 
+    // Optimistic Update
+    const optimisticData = editingId 
+      ? categories.map((c: any) => c.id === editingId ? { ...c, ...formData } : c)
+      : [...categories, { id: `temp-${Date.now()}`, ...formData }];
+      
+    mutate(optimisticData, false);
+    setIsDialogOpen(false);
+
+    try {
       const res = await fetch(url, {
         method,
         headers: { 
+        "Authorization": `Bearer ${token}`, 
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` 
-        },
+          },
         body: JSON.stringify(formData)
       });
       const data = await res.json();
       
       if (data.success) {
         toast.success(`Category ${editingId ? 'updated' : 'created'} successfully`);
-        setIsDialogOpen(false);
-        fetchCategories();
+        mutate();
       } else {
         toast.error(data.message || `Failed to ${editingId ? 'update' : 'create'} category`);
+        mutate();
       }
     } catch (err) {
       toast.error("An error occurred");
+      mutate();
     }
   };
 
   const deleteCategory = async () => {
     if (!deleteId) return;
+    const currentDeleteId = deleteId;
+    setDeleteId(null);
+    
+    mutate(categories.filter((c: any) => c.id !== currentDeleteId), false);
+    
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/categories/${deleteId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/categories/${currentDeleteId}`, {
         method: "DELETE",
-        headers: { "Authorization": `Bearer ${token}` }
-      });
+        headers: { "Authorization": `Bearer ${token}` }});
       if (res.ok) {
-        toast.success("Category deleted securely", {
-          description: "The category has been permanently removed."
-        });
-        fetchCategories();
+        toast.success("Category deleted securely");
+        mutate();
       } else {
         toast.error("Failed to delete category");
+        mutate();
       }
     } catch (err) {
       toast.error("An error occurred");
-    } finally {
-      setDeleteId(null);
+      mutate();
     }
   };
 

@@ -52,7 +52,7 @@ export function CartSheet() {
                   <div className="flex-1 flex flex-col justify-between">
                     <div>
                       <h4 className="font-medium line-clamp-1">{item.name}</h4>
-                      <p className="text-sm font-semibold text-primary">${item.price.toFixed(2)}</p>
+                      <p className="text-sm font-semibold text-primary">৳{item.price.toFixed(2)}</p>
                     </div>
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center border border-border rounded-md">
@@ -94,7 +94,7 @@ export function CartSheet() {
           <div className="pt-6 border-t border-border/50 space-y-4">
             <div className="flex justify-between items-center text-lg font-semibold">
               <span>Total</span>
-              <span>${cartTotal.toFixed(2)}</span>
+              <span>৳{cartTotal.toFixed(2)}</span>
             </div>
             <p className="text-sm text-muted-foreground text-center">
               Shipping and taxes calculated at checkout.

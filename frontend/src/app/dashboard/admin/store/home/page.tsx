@@ -62,7 +62,8 @@ export default function HomeLayoutSettingsPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/store-settings`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("token")}` },
+        headers: { 
+        "Authorization": `Bearer ${localStorage.getItem("token")}`, "Content-Type": "application/json", },
         body: JSON.stringify({ banners, homeLayout }),
       });
       const json = await res.json();
@@ -103,14 +104,12 @@ export default function HomeLayoutSettingsPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/upload`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
-        },
+        headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
         body: formData
       });
       const data = await res.json();
-      if (data.success && data.url) {
-        updateBanner(uploadIndex, "imageUrl", data.url);
+      if (data.success && data.data?.url) {
+        updateBanner(uploadIndex, "imageUrl", data.data.url);
         toast.success("Image uploaded successfully");
       } else {
         toast.error(data.message || "Upload failed");

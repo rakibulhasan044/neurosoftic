@@ -21,9 +21,10 @@ export default function AdminInventoryPage() {
   const fetchInventory = async (query = "") => {
     setLoading(true);
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/inventory?search=${query}`, {
-        cache: 'no-store'
-      });
+        cache: 'no-store',
+        headers: { "Authorization": `Bearer ${token}` }});
       if (res.ok) {
         const data = await res.json();
         setVariants(data.variants || []);
@@ -54,10 +55,14 @@ export default function AdminInventoryPage() {
     if (!editingVariant) return;
     
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/inventory/${editingVariant.id}/adjust`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stock: Number(newStock) })
+        headers: { 
+        "Authorization": `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          },
+        body: JSON.stringify({ stock: parseInt(newStock) })
       });
 
       if (res.ok) {
@@ -127,10 +132,10 @@ export default function AdminInventoryPage() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div className="relative h-10 w-10 bg-muted rounded overflow-hidden">
-                          {variant.product?.image ? (
-                            <Image src={variant.product.image} alt="" fill className="object-cover" />
+                          {variant.product?.media?.[0]?.url ? (
+                            <Image src={variant.product.media[0].url} alt="" fill className="object-cover" />
                           ) : (
-                            <Package className="h-4 w-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-muted-foreground" />
+                            <Package className="h-5 w-5 m-2.5 text-muted-foreground" />
                           )}
                         </div>
                         <span className="font-medium">{variant.product?.name || "Unknown Product"}</span>

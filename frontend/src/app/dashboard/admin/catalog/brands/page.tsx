@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,8 +35,10 @@ import { toast } from "sonner";
 import Image from "next/image";
 
 export default function BrandsPage() {
-  const [brands, setBrands] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: brands = [], isLoading, mutate } = useSWR(
+    `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/brands`,
+    fetcher
+  );
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -43,24 +47,6 @@ export default function BrandsPage() {
   const [formData, setFormData] = useState({ name: "", description: "", logo: "" });
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    fetchBrands();
-  }, []);
-
-  const fetchBrands = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/brands`);
-      const data = await res.json();
-      if (data.success) {
-        setBrands(data.data);
-      }
-    } catch (error) {
-      toast.error("Failed to fetch brands");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const openCreateDialog = () => {
     setEditingId(null);
@@ -90,7 +76,7 @@ export default function BrandsPage() {
       
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/upload`, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${token}` },
+        headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
         body: fd
       });
       
@@ -110,55 +96,66 @@ export default function BrandsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const token = localStorage.getItem("token");
-      const method = editingId ? "PATCH" : "POST";
-      const url = editingId 
-        ? `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/brands/${editingId}`
-        : `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/brands`;
+    const token = localStorage.getItem("token");
+    const method = editingId ? "PATCH" : "POST";
+    const url = editingId 
+      ? `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/brands/${editingId}`
+      : `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/brands`;
 
+    // Optimistic Update
+    const optimisticData = editingId 
+      ? brands.map((b: any) => b.id === editingId ? { ...b, ...formData } : b)
+      : [...brands, { id: `temp-${Date.now()}`, ...formData }];
+      
+    mutate(optimisticData, false);
+    setIsDialogOpen(false);
+
+    try {
       const res = await fetch(url, {
         method,
         headers: { 
+        "Authorization": `Bearer ${token}`, 
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` 
-        },
+          },
         body: JSON.stringify(formData)
       });
       const data = await res.json();
       
       if (data.success) {
         toast.success(`Brand ${editingId ? 'updated' : 'created'} successfully`);
-        setIsDialogOpen(false);
-        fetchBrands();
+        mutate();
       } else {
         toast.error(data.message || `Failed to ${editingId ? 'update' : 'create'} brand`);
+        mutate();
       }
     } catch (err) {
       toast.error("An error occurred");
+      mutate();
     }
   };
 
   const deleteBrand = async () => {
     if (!deleteId) return;
+    const currentDeleteId = deleteId;
+    setDeleteId(null);
+    
+    mutate(brands.filter((b: any) => b.id !== currentDeleteId), false);
+    
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/brands/${deleteId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/brands/${currentDeleteId}`, {
         method: "DELETE",
-        headers: { "Authorization": `Bearer ${token}` }
-      });
+        headers: { "Authorization": `Bearer ${token}` }});
       if (res.ok) {
-        toast.success("Brand deleted securely", {
-          description: "The brand has been permanently removed."
-        });
-        fetchBrands();
+        toast.success("Brand deleted securely");
+        mutate();
       } else {
         toast.error("Failed to delete brand");
+        mutate();
       }
     } catch (err) {
       toast.error("An error occurred");
-    } finally {
-      setDeleteId(null);
+      mutate();
     }
   };
 

@@ -15,6 +15,8 @@ export const StoreSettingsService = {
     let seoConfigSetting = await prisma.setting.findUnique({ where: { key: "SEO_CONFIG" } });
     let legalPoliciesSetting = await prisma.setting.findUnique({ where: { key: "LEGAL_POLICIES" } });
     let homeLayoutSetting = await prisma.setting.findUnique({ where: { key: "HOME_LAYOUT" } });
+    let aboutPageSetting = await prisma.setting.findUnique({ where: { key: "ABOUT_PAGE" } });
+    let faqSetting = await prisma.setting.findUnique({ where: { key: "FAQ_CONFIG" } });
 
     // 4. Get Navigation Menus and Banners
     const menus = await prisma.menu.findMany({ where: { isActive: true } });
@@ -47,13 +49,21 @@ export const StoreSettingsService = {
       seo: seoConfigSetting?.value || {},
       legal: legalPoliciesSetting?.value || {},
       homeLayout: homeLayoutSetting?.value || {},
+      about: aboutPageSetting?.value || {
+        title: "About Neurosoftic",
+        story: "We started with a vision to build the future...",
+        mission: "To deliver premium tech to everyone.",
+        vision: "A world connected by innovation.",
+        heroImage: null
+      },
+      faq: faqSetting?.value || [],
       navigation: menus,
       banners: banners,
     };
   },
 
   updateStoreSettings: async (payload: any) => {
-    const { identity, theme, businessProfile, localization, seo, legal, homeLayout, navigation, banners } = payload;
+    const { identity, theme, businessProfile, localization, seo, legal, homeLayout, about, faq, navigation, banners } = payload;
     
     // 1. Update Identity
     if (identity && identity.companyName) {
@@ -107,7 +117,6 @@ export const StoreSettingsService = {
       { key: "LOCALIZATION", value: localization },
       { key: "SEO_CONFIG", value: seo },
       { key: "LEGAL_POLICIES", value: legal },
-      { key: "HOME_LAYOUT", value: homeLayout },
     ];
 
     for (const item of settingUpdates) {
@@ -118,6 +127,30 @@ export const StoreSettingsService = {
           create: { key: item.key, value: item.value }
         });
       }
+    }
+
+    if (homeLayout) {
+      await prisma.setting.upsert({
+        where: { key: "HOME_LAYOUT" },
+        update: { value: homeLayout },
+        create: { key: "HOME_LAYOUT", value: homeLayout }
+      });
+    }
+
+    if (about) {
+      await prisma.setting.upsert({
+        where: { key: "ABOUT_PAGE" },
+        update: { value: about },
+        create: { key: "ABOUT_PAGE", value: about }
+      });
+    }
+
+    if (faq) {
+      await prisma.setting.upsert({
+        where: { key: "FAQ_CONFIG" },
+        update: { value: faq },
+        create: { key: "FAQ_CONFIG", value: faq }
+      });
     }
 
     // 4. Update Navigation

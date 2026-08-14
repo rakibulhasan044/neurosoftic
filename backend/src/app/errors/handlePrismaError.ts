@@ -14,13 +14,15 @@ const handlePrismaError = (
           (error.meta as any)?.driverAdapterError?.cause?.constraint
             ?.fields?.[0] ?? (error.meta as any)?.target?.[0];
 
+        const fieldName = field ? field.charAt(0).toUpperCase() + field.slice(1) : "Record";
+
         return {
           statusCode: 409,
-          message: "Duplicate Value",
+          message: `${fieldName} already exists`,
           errorDetails: [
             {
               field,
-              message: `${field ?? "Field"} already exists.`,
+              message: `${fieldName} already exists`,
             },
           ],
         };

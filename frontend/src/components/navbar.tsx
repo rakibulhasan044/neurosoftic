@@ -15,6 +15,8 @@ export function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [storeName, setStoreName] = useState("NEUROSOFTIC");
   const [storeLogo, setStoreLogo] = useState<string | null>(null);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -39,7 +41,7 @@ export function Navbar() {
     };
     fetchStoreSettings();
 
-    const checkAuth = () => {
+    const checkAuth = async () => {
       const token = localStorage.getItem("token");
       const name = localStorage.getItem("userName");
       const role = localStorage.getItem("userRole");
@@ -48,10 +50,24 @@ export function Navbar() {
         setIsLoggedIn(true);
         if (name) setUserName(name);
         if (role) setUserRole(role);
+        
+        // Fetch wishlist count
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/wishlists`, {
+            headers: { "Authorization": `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setWishlistCount(data.data?.length || 0);
+          }
+        } catch (error) {
+          console.error("Failed to fetch wishlist count", error);
+        }
       } else {
         setIsLoggedIn(false);
         setUserName("");
         setUserRole("");
+        setWishlistCount(0);
       }
     };
 
@@ -82,12 +98,20 @@ export function Navbar() {
     setIsLoggedIn(false);
     setUserName("");
     setUserRole("");
+    setWishlistCount(0);
     setDropdownOpen(false);
     router.push("/");
   };
 
   const getInitials = (name: string) => {
     return name ? name.charAt(0).toUpperCase() : "U";
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
   };
 
   const dashboardLink = userRole === "SUPER_ADMIN" || userRole === "ADMIN" 
@@ -99,8 +123,8 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 max-w-screen-2xl items-center px-4 mx-auto">
-        <div className="mr-4 hidden md:flex">
+      <div className="container flex h-16 max-w-screen-2xl items-center px-4 mx-auto relative">
+        <div className="flex flex-1 items-center justify-start hidden md:flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
             {storeLogo ? (
                <img src={storeLogo} alt={storeName} className="h-8 w-auto" />
@@ -110,15 +134,29 @@ export function Navbar() {
               </span>
             )}
           </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            <Link
-              href="/products"
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-            >
-              Shop
-            </Link>
-          </nav>
         </div>
+        
+        <nav className="hidden md:flex flex-1 items-center justify-center space-x-8 text-sm font-medium absolute left-1/2 -translate-x-1/2">
+          <Link
+            href="/"
+            className="transition-colors hover:text-primary text-foreground/80 font-semibold"
+          >
+            Home
+          </Link>
+          <Link
+            href="/products"
+            className="transition-colors hover:text-primary text-foreground/80 font-semibold"
+          >
+            Shop
+          </Link>
+          <Link
+            href="/about"
+            className="transition-colors hover:text-primary text-foreground/80 font-semibold"
+          >
+            About
+          </Link>
+        </nav>
+
         <Sheet>
           <SheetTrigger 
             render={
@@ -138,8 +176,10 @@ export function Navbar() {
             >
               <span className="font-bold text-xl tracking-tight text-primary">NEUROSOFTIC</span>
             </Link>
-            <div className="flex flex-col space-y-3 mt-6">
-              <Link href="/products" className="text-lg">Shop</Link>
+            <div className="flex flex-col space-y-4 mt-6">
+              <Link href="/" className="text-lg font-medium">Home</Link>
+              <Link href="/products" className="text-lg font-medium">Shop</Link>
+              <Link href="/about" className="text-lg font-medium">About</Link>
             </div>
           </SheetContent>
         </Sheet>
@@ -153,14 +193,16 @@ export function Navbar() {
 
         <div className="flex flex-1 items-center justify-end space-x-2">
           <div className="w-full flex-1 md:w-auto md:flex-none hidden lg:block mr-2">
-            <div className="relative">
+            <form onSubmit={handleSearch} className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <input
                 type="search"
                 placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 pl-9 md:w-[300px]"
               />
-            </div>
+            </form>
           </div>
           <nav className="flex items-center space-x-2 relative" ref={dropdownRef}>
             {isLoggedIn ? (
@@ -215,6 +257,11 @@ export function Navbar() {
             <Link href="/dashboard/customer/wishlist">
               <Button variant="ghost" size="icon" className="w-9 px-0 hover:bg-transparent hidden sm:flex relative">
                 <Heart className="h-5 w-5 hover:text-primary transition-colors" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
                 <span className="sr-only">Wishlist</span>
               </Button>
             </Link>

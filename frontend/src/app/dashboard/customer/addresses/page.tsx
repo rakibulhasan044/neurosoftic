@@ -16,8 +16,7 @@ export default function CustomerAddressesPage() {
       if (!token) return;
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/user/addresses`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+          headers: { "Authorization": `Bearer ${token}` }});
         if (res.ok) {
           const data = await res.json();
           setAddresses(data.data || []);

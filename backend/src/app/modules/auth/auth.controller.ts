@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { AuthService } from "./auth.service";
 
 export const AuthController = {
-  register: async (req: Request, res: Response) => {
+  register: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await AuthService.register(req.body);
       res.status(201).json({
@@ -11,11 +11,11 @@ export const AuthController = {
         data: result,
       });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   },
 
-  login: async (req: Request, res: Response) => {
+  login: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await AuthService.login(req.body);
       res.status(200).json({
@@ -24,11 +24,12 @@ export const AuthController = {
         data: result,
       });
     } catch (err: any) {
-      res.status(401).json({ success: false, message: err.message });
+      next(err);
     }
   },
 
-  changePassword: async (req: Request, res: Response) => {
+
+  changePassword: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = (req as any).user.userId;
       const result = await AuthService.changePassword(userId, req.body);
@@ -38,7 +39,7 @@ export const AuthController = {
         data: result,
       });
     } catch (err: any) {
-      res.status(400).json({ success: false, message: err.message });
+      next(err);
     }
   }
 };
