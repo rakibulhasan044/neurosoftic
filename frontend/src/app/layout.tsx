@@ -1,8 +1,7 @@
 import type { Metadata, ResolvingMetadata } from "next";
 import { Inter, Roboto, Playfair_Display, Outfit } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
+import { NavigationWrapper } from "@/components/NavigationWrapper";
 import { CartProvider } from "@/context/cart-context";
 import { WishlistProvider } from "@/context/wishlist-context";
 import { Toaster } from "@/components/ui/sonner";
@@ -60,11 +59,9 @@ export default async function RootLayout({
       >
         <CartProvider>
           <WishlistProvider>
-            <Navbar />
-            <main className="flex-1">
+            <NavigationWrapper>
               {children}
-            </main>
-            <Footer />
+            </NavigationWrapper>
             <Toaster richColors position="top-right" />
           </WishlistProvider>
         </CartProvider>
