@@ -57,7 +57,7 @@ export default function CustomerDashboardPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">My Account</h1>
-        <p className="text-muted-foreground mt-2">Welcome back, {profile?.name || localStorage.getItem('userName') || 'Customer'}! Here's an overview of your account.</p>
+        <p className="text-muted-foreground mt-2">Welcome back, {profile?.name || (typeof window !== 'undefined' ? localStorage.getItem('userName') : null) || 'Customer'}! Here's an overview of your account.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">

@@ -267,7 +267,7 @@ export default function CategoriesPage() {
                 <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">No categories found.</TableCell>
               </TableRow>
             ) : (
-              categories.map((cat) => (
+              categories.map((cat: any) => (
                 <TableRow key={cat.id}>
                   <TableCell>
                     {cat.image ? (

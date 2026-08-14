@@ -94,7 +94,7 @@ export default function ProductsPage() {
                 <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">No products found.</TableCell>
               </TableRow>
             ) : (
-              products.map((prod) => (
+              products.map((prod: any) => (
                 <TableRow key={prod.id}>
                   <TableCell className="font-medium">{prod.name}</TableCell>
                   <TableCell>{prod.category?.name || "-"}</TableCell>

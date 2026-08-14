@@ -129,7 +129,7 @@ export function AdminOrdersClient() {
               />
             </div>
             <div className="w-full sm:w-[200px]">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onValueChange={(val) => val && setStatusFilter(val)}>
                 <SelectTrigger>
                   <Filter className="w-4 h-4 mr-2" />
                   <SelectValue placeholder="Filter by Status" />

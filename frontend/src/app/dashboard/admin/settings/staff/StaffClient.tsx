@@ -214,7 +214,7 @@ export function StaffClient() {
             </div>
             <div className="space-y-2">
               <Label>Role</Label>
-              <Select value={formData.role} onValueChange={v => setFormData({...formData, role: v})}>
+              <Select value={formData.role} onValueChange={v => v && setFormData({...formData, role: v})}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
@@ -241,7 +241,7 @@ export function StaffClient() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Select New Role</Label>
-              <Select value={newRole} onValueChange={setNewRole}>
+              <Select value={newRole} onValueChange={(val) => val && setNewRole(val)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>

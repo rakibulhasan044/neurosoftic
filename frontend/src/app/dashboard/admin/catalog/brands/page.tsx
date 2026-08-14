@@ -256,7 +256,7 @@ export default function BrandsPage() {
                 <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">No brands found.</TableCell>
               </TableRow>
             ) : (
-              brands.map((brand) => (
+              brands.map((brand: any) => (
                 <TableRow key={brand.id}>
                   <TableCell>
                     {brand.logo ? (

@@ -240,7 +240,7 @@ export default function CollectionsPage() {
                   {products.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No products available.</p>
                   ) : (
-                    products.map(product => (
+                    products.map((product: any) => (
                       <div key={product.id} className="flex items-center space-x-2">
                         <input
                           type="checkbox"
@@ -295,7 +295,7 @@ export default function CollectionsPage() {
                 <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">No collections found.</TableCell>
               </TableRow>
             ) : (
-              collections.map((col) => (
+              collections.map((col: any) => (
                 <TableRow key={col.id}>
                   <TableCell>
                     {col.banner ? (

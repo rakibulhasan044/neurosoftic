@@ -33,7 +33,7 @@ export async function FAQSection() {
         </div>
         
         <Accordion className="w-full bg-background rounded-2xl p-6 shadow-sm border border-border/50">
-          {faqs.map((faq, i) => (
+          {faqs.map((faq: any, i: number) => (
             <AccordionItem key={i} value={`item-${i}`}>
               <AccordionTrigger className="text-left font-semibold text-lg hover:text-primary transition-colors">
                 {faq.q}
