@@ -180,6 +180,29 @@ export function Navbar() {
               <Link href="/" className="text-lg font-medium">Home</Link>
               <Link href="/products" className="text-lg font-medium">Shop</Link>
               <Link href="/about" className="text-lg font-medium">About</Link>
+              
+              <div className="my-4 border-t border-border pt-4 flex flex-col space-y-4">
+                {isLoggedIn ? (
+                  <>
+                    <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                      Account ({userName || "User"})
+                    </div>
+                    <Link href={dashboardLink} className="flex items-center text-lg font-medium">
+                      <LayoutDashboard className="mr-3 h-5 w-5" />
+                      Dashboard
+                    </Link>
+                    <button onClick={handleLogout} className="flex items-center text-lg font-medium text-destructive text-left">
+                      <LogOut className="mr-3 h-5 w-5" />
+                      Log out
+                    </button>
+                  </>
+                ) : (
+                  <Link href="/auth" className="flex items-center text-lg font-medium">
+                    <User className="mr-3 h-5 w-5" />
+                    Login / Register
+                  </Link>
+                )}
+              </div>
             </div>
           </SheetContent>
         </Sheet>
