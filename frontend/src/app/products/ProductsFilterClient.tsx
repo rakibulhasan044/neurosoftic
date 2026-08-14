@@ -52,16 +52,14 @@ export function ProductsFilterClient({ categories, brands, currentParams }: Prod
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2 rounded-full relative">
-          <Filter className="h-4 w-4" /> 
-          Filter & Sort
-          {activeFiltersCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
-              {activeFiltersCount}
-            </span>
-          )}
-        </Button>
+      <SheetTrigger render={<Button variant="outline" className="flex items-center gap-2 rounded-full relative" />}>
+        <Filter className="h-4 w-4" /> 
+        Filter & Sort
+        {activeFiltersCount > 0 && (
+          <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+            {activeFiltersCount}
+          </span>
+        )}
       </SheetTrigger>
       <SheetContent className="w-[350px] sm:w-[450px] overflow-y-auto">
         <SheetHeader className="mb-6">

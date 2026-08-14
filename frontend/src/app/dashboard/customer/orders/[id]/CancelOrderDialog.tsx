@@ -58,11 +58,9 @@ export function CancelOrderDialog({ orderId, status, shippingCost }: CancelOrder
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="destructive" size="sm">
-          <XCircle className="h-4 w-4 mr-2" />
-          Cancel Order
-        </Button>
+      <DialogTrigger render={<Button variant="destructive" size="sm" />}>
+        <XCircle className="h-4 w-4 mr-2" />
+        Cancel Order
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

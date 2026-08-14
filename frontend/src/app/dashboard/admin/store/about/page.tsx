@@ -138,12 +138,10 @@ export default function AboutSettingsPage() {
                 </div>
               )}
               <div className="flex items-center gap-4">
-                <Button variant="outline" asChild>
-                  <label className="cursor-pointer flex items-center">
-                    <UploadCloud className="mr-2 h-4 w-4" />
-                    Upload Image
-                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-                  </label>
+                <Button variant="outline" render={<label className="cursor-pointer flex items-center" />}>
+                  <UploadCloud className="mr-2 h-4 w-4" />
+                  Upload Image
+                  <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                 </Button>
                 {about.heroImage && (
                   <Button variant="ghost" className="text-destructive" onClick={() => setAbout({...about, heroImage: ""})}>
