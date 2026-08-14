@@ -1,4 +1,4 @@
-import { prisma } from "@/app/lib/prisma";
+import { prisma } from "../../lib/prisma";
 
 export const BarcodeService = {
   generateBarcode: async (categoryId: string, variantCode: string) => {

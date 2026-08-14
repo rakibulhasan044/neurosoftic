@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import AppError from "../errors/AppError";
-import { Prisma } from "@generated/prisma/client";
+import { Prisma } from "@prisma/client";
 import { ZodError } from "zod";
 import jwt from "jsonwebtoken";
 import { handleJwtError } from "../errors/handleJwtError";
