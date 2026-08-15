@@ -4,8 +4,29 @@ import Link from "next/link";
 import { Globe, MessageCircle, Share2, Camera } from "lucide-react";
 import { usePathname } from "next/navigation";
 
+import { useState, useEffect } from "react";
+
 export function Footer() {
   const pathname = usePathname();
+  const [storeName, setStoreName] = useState("NEUROSOFTIC");
+
+  useEffect(() => {
+    const fetchStoreSettings = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/store-settings`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.data?.identity?.companyName) {
+            setStoreName(data.data.identity.companyName);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch store settings", err);
+      }
+    };
+    fetchStoreSettings();
+  }, []);
+
   if (pathname?.startsWith("/dashboard")) return null;
 
   return (
@@ -13,7 +34,7 @@ export function Footer() {
       <div className="container mx-auto px-4 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
-            <h3 className="text-xl font-bold tracking-tight text-primary">NEUROSOFTIC</h3>
+            <h3 className="text-xl font-bold tracking-tight text-primary">{storeName}</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Premium tech and lifestyle products designed to elevate your everyday experience. 
               Discover the future of personal technology.
@@ -61,7 +82,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Neurosoftic. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {storeName}. All rights reserved.</p>
         </div>
       </div>
     </footer>

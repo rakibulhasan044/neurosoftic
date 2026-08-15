@@ -43,7 +43,6 @@ const storeSettingsLinks = [
   { name: "General", href: "/dashboard/admin/store/general", icon: Globe },
   { name: "Branding & Theme", href: "/dashboard/admin/store/branding", icon: Palette },
   { name: "Home Layout", href: "/dashboard/admin/store/home", icon: Layout },
-  { name: "Navigation", href: "/dashboard/admin/store/navigation", icon: Menu },
   { name: "FAQ", href: "/dashboard/admin/store/faq", icon: Layout },
   { name: "About Page", href: "/dashboard/admin/store/about", icon: Layout },
   { name: "SEO Settings", href: "/dashboard/admin/store/seo", icon: BarChart },

@@ -268,13 +268,11 @@ export function Navbar() {
               </div>
             ) : (
               <Button 
-                variant="ghost" 
-                size="icon" 
-                className="w-9 px-0 hover:bg-transparent hidden sm:flex"
+                variant="outline" 
+                className="hidden sm:flex rounded-full px-4 h-9 font-medium"
                 render={<Link href="/auth" />}
               >
-                <User className="h-5 w-5 hover:text-primary transition-colors" />
-                <span className="sr-only">Account</span>
+                Login
               </Button>
             )}
             <Link href="/dashboard/customer/wishlist">
