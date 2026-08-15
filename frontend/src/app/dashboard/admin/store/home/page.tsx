@@ -156,16 +156,18 @@ export default function HomeLayoutSettingsPage() {
           <div className="p-6 border-b border-border flex items-center gap-2">
             <Layout className="h-5 w-5 text-primary" />
             <h2 className="font-semibold text-lg">Section Visibility</h2>
+            <span className="ml-auto text-xs font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full">Coming Soon</span>
           </div>
           <div className="p-4 space-y-1">
             {sectionKeys.map((key) => (
-              <label key={key} className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50 cursor-pointer transition-colors">
+              <label key={key} className="flex items-center justify-between p-3 rounded-md bg-muted/20 opacity-60 cursor-not-allowed">
                 <span className="text-sm font-medium">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
                 <input 
                   type="checkbox" 
+                  disabled
                   checked={homeLayout.sections[key]} 
-                  onChange={() => toggleSection(key)}
-                  className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  onChange={() => {}}
+                  className="w-4 h-4 rounded border-gray-300 text-primary opacity-50 cursor-not-allowed"
                 />
               </label>
             ))}
@@ -177,7 +179,10 @@ export default function HomeLayoutSettingsPage() {
           <div className="p-6 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ImageIcon className="h-5 w-5 text-primary" />
-              <h2 className="font-semibold text-lg">Campaign Banners</h2>
+              <div>
+                <h2 className="font-semibold text-lg">Campaign Banners</h2>
+                <p className="text-xs text-muted-foreground mt-1">Please select and activate one banner at a time.</p>
+              </div>
             </div>
             <Button onClick={addBanner} size="sm" variant="outline" className="gap-2">
               <Plus className="h-4 w-4" /> Add Banner

@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { AdminSidebar } from "@/components/modules/dashboard/admin/AdminSidebar";
+import { RoleGuard } from "@/components/auth/RoleGuard";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | Neurosoftic",
@@ -12,11 +13,13 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-muted/20">
-      <AdminSidebar />
-      <main className="flex-1 overflow-y-auto p-8">
-        {children}
-      </main>
-    </div>
+    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+      <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-muted/20">
+        <AdminSidebar />
+        <main className="flex-1 overflow-y-auto p-8">
+          {children}
+        </main>
+      </div>
+    </RoleGuard>
   );
 }
