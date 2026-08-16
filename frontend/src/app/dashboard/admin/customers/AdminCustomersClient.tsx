@@ -4,22 +4,26 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { format } from "date-fns";
 
 export function AdminCustomersClient() {
   const [customers, setCustomers] = useState<any[]>([]);
+  const [meta, setMeta] = useState({ totalPages: 1, page: 1, limit: 10, total: 0 });
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/user/customers`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/user/customers?page=${page}&limit=10`, {
           headers: { "Authorization": `Bearer ${token}` }});
         
         if (res.ok) {
           const data = await res.json();
-          setCustomers(data.users || []);
+          setCustomers(data.data || []);
+          if (data.meta) setMeta(data.meta);
         }
       } catch (error) {
         console.error("Failed to fetch customers", error);
@@ -29,7 +33,7 @@ export function AdminCustomersClient() {
     };
     
     fetchCustomers();
-  }, []);
+  }, [page]);
 
   return (
     <Card>
@@ -78,8 +82,18 @@ export function AdminCustomersClient() {
                 </TableRow>
               ))
             )}
-          </TableBody>
-        </Table>
+            </TableBody>
+          </Table>
+        </div>
+        {meta.totalPages > 1 && (
+          <div className="mt-4">
+            <PaginationControls
+              currentPage={page}
+              totalPages={meta.totalPages}
+              onPageChange={setPage}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

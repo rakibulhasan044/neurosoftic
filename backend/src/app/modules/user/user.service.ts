@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma";
+import { paginationHelper } from "../../shared/paginationHelper";
 import bcrypt from "bcrypt";
 
 export const UserService = {
@@ -187,8 +188,8 @@ export const UserService = {
   },
 
   getCustomers: async (filters: any) => {
-    const { page = 1, limit = 50, search } = filters;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(filters);
+    const { search } = filters;
 
     const where: any = { role: "CUSTOMER" };
     if (search) {
@@ -201,9 +202,9 @@ export const UserService = {
     const [users, total] = await Promise.all([
       prisma.user.findMany({
         where,
-        skip: Number(skip),
-        take: Number(limit),
-        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder },
         include: {
           profile: true,
           _count: { select: { orders: true } }
@@ -216,16 +217,16 @@ export const UserService = {
       users,
       meta: {
         total,
-        page: Number(page),
-        limit: Number(limit),
-        totalPages: Math.ceil(total / Number(limit))
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
       }
     };
   },
 
   getStaff: async (filters: any) => {
-    const { page = 1, limit = 50, search } = filters;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(filters);
+    const { search } = filters;
 
     const where: any = { role: { not: "CUSTOMER" } };
     if (search) {
@@ -238,9 +239,9 @@ export const UserService = {
     const [users, total] = await Promise.all([
       prisma.user.findMany({
         where,
-        skip: Number(skip),
-        take: Number(limit),
-        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder },
         include: { profile: true }
       }),
       prisma.user.count({ where })
@@ -250,9 +251,9 @@ export const UserService = {
       users,
       meta: {
         total,
-        page: Number(page),
-        limit: Number(limit),
-        totalPages: Math.ceil(total / Number(limit))
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
       }
     };
   }

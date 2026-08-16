@@ -10,10 +10,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Package, Search, Edit2 } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export default function AdminInventoryPage() {
   const [variants, setVariants] = useState<any[]>([]);
+  const [meta, setMeta] = useState({ totalPages: 1, page: 1, limit: 10, total: 0 });
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [editingVariant, setEditingVariant] = useState<any>(null);
   const [newStock, setNewStock] = useState("");
@@ -22,12 +25,13 @@ export default function AdminInventoryPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/inventory?search=${query}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/inventory?search=${query}&page=${page}&limit=10`, {
         cache: 'no-store',
         headers: { "Authorization": `Bearer ${token}` }});
       if (res.ok) {
         const data = await res.json();
-        setVariants(data.variants || []);
+        setVariants(data.data || []);
+        if (data.meta) setMeta(data.meta);
       }
     } catch (error) {
       console.error("Failed to fetch inventory", error);
@@ -38,8 +42,8 @@ export default function AdminInventoryPage() {
   };
 
   useEffect(() => {
-    fetchInventory();
-  }, []);
+    fetchInventory(search);
+  }, [page]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -171,6 +175,16 @@ export default function AdminInventoryPage() {
               )}
             </TableBody>
           </Table>
+
+          {meta.totalPages > 1 && (
+            <div className="mt-4">
+              <PaginationControls
+                currentPage={page}
+                totalPages={meta.totalPages}
+                onPageChange={setPage}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 

@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import { format } from "date-fns";
 import Link from "next/link";
 import { Eye, Search, Filter } from "lucide-react";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,20 +40,23 @@ const getStatusColor = (status: string) => {
 
 export function AdminOrdersClient() {
   const [orders, setOrders] = useState<any[]>([]);
+  const [meta, setMeta] = useState({ totalPages: 1, page: 1, limit: 10, total: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/orders?limit=100`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/orders?page=${page}&limit=10&status=${statusFilter}`, {
           headers: { "Authorization": `Bearer ${token}` }});
         
         if (res.ok) {
           const data = await res.json();
-          setOrders(data.orders || []);
+          setOrders(data.data || []);
+          if (data.meta) setMeta(data.meta);
         }
       } catch (error) {
         console.error("Failed to fetch orders", error);
@@ -62,7 +66,7 @@ export function AdminOrdersClient() {
     };
     
     fetchOrders();
-  }, []);
+  }, [statusFilter, page]);
 
   // Filtering logic
   const filteredOrders = useMemo(() => {
@@ -129,7 +133,7 @@ export function AdminOrdersClient() {
               />
             </div>
             <div className="w-full sm:w-[200px]">
-              <Select value={statusFilter} onValueChange={(val) => val && setStatusFilter(val)}>
+              <Select value={statusFilter} onValueChange={(val) => {setStatusFilter(val); setPage(1);}}>
                 <SelectTrigger>
                   <Filter className="w-4 h-4 mr-2" />
                   <SelectValue placeholder="Filter by Status" />
@@ -210,6 +214,15 @@ export function AdminOrdersClient() {
               </TableBody>
             </Table>
           </div>
+          {meta.totalPages > 1 && (
+            <div className="mt-4">
+              <PaginationControls
+                currentPage={page}
+                totalPages={meta.totalPages}
+                onPageChange={setPage}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

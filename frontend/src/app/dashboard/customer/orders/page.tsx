@@ -7,10 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, PackageX } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export default function CustomerOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
+  const [meta, setMeta] = useState({ totalPages: 1, page: 1, limit: 10, total: 0 });
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -18,12 +21,12 @@ export default function CustomerOrdersPage() {
       if (!token) return;
 
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/orders/me/orders`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/orders/me/orders?page=${page}&limit=10`, {
           headers: { "Authorization": `Bearer ${token}` }});
         if (res.ok) {
           const data = await res.json();
-          console.log("res", data);
-          setOrders(data.orders || []);
+          setOrders(data.data || []);
+          if (data.meta) setMeta(data.meta);
         }
       } catch (err) {
         console.error(err);
@@ -32,7 +35,7 @@ export default function CustomerOrdersPage() {
       }
     };
     fetchOrders();
-  }, []);
+  }, [page]);
 
   if (loading) {
     return (
@@ -99,7 +102,18 @@ export default function CustomerOrdersPage() {
             </Card>
           ))}
         </div>
-      )}
+        
+        {meta.totalPages > 1 && (
+          <div className="mt-8">
+            <PaginationControls
+              currentPage={page}
+              totalPages={meta.totalPages}
+              onPageChange={setPage}
+            />
+          </div>
+        )}
+      </>
+    )}
     </div>
   );
 }

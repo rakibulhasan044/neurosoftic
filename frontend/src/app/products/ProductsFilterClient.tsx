@@ -117,6 +117,10 @@ export function ProductsFilterClient({ categories, brands, currentParams }: Prod
                 <Label htmlFor="sort-newest">Newest Arrivals</Label>
               </div>
               <div className="flex items-center space-x-2 py-1">
+                <RadioGroupItem value="oldest" id="sort-oldest" />
+                <Label htmlFor="sort-oldest">Oldest Arrivals</Label>
+              </div>
+              <div className="flex items-center space-x-2 py-1">
                 <RadioGroupItem value="price-asc" id="sort-price-asc" />
                 <Label htmlFor="sort-price-asc">Price: Low to High</Label>
               </div>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Filter } from "lucide-react";
 import { ProductCard } from "@/components/modules/products/ProductCard";
 import { ProductsFilterClient } from "./ProductsFilterClient";
+import { PaginationClient } from "./PaginationClient";
 
 export const metadata: Metadata = {
   title: "All Products | Neurosoftic",
@@ -20,16 +21,19 @@ async function getProducts(searchParams?: any) {
     if (searchParams?.sort) query.append("sort", searchParams.sort);
     if (searchParams?.search) query.append("search", searchParams.search);
     
+    query.append("page", searchParams?.page || "1");
+    query.append("limit", "20"); // Default 20 for shop page
+
     if (query.toString()) {
       url += `?${query.toString()}`;
     }
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to fetch');
     const json = await res.json();
-    return json.data || [];
+    return { data: json.data || [], meta: json.meta };
   } catch (error) {
     console.error("Error fetching products:", error);
-    return [];
+    return { data: [], meta: { totalPages: 1, page: 1 } };
   }
 }
 
@@ -58,7 +62,7 @@ async function getBrands() {
 export default async function ProductsPage({ searchParams }: any) {
   // Await searchParams in Next.js 15
   const params = await searchParams;
-  const [products, categories, brands] = await Promise.all([
+  const [{ data: products, meta }, categories, brands] = await Promise.all([
     getProducts(params),
     getCategories(),
     getBrands()
@@ -85,6 +89,10 @@ export default async function ProductsPage({ searchParams }: any) {
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
+      )}
+
+      {meta && meta.totalPages > 1 && (
+        <PaginationClient currentPage={meta.page} totalPages={meta.totalPages} />
       )}
     </div>
   );

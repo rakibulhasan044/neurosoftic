@@ -40,7 +40,12 @@ export const OrderController = {
   getOrders: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await OrderService.getOrders(req.query);
-      res.status(200).json({ success: true, ...result });
+      res.status(200).json({ 
+        success: true, 
+        message: "Orders fetched successfully",
+        meta: result.meta,
+        data: result.orders 
+      });
     } catch (err: any) {
       next(err);
     }
@@ -54,7 +59,12 @@ export const OrderController = {
         return;
       }
       const result = await OrderService.getMyOrders(userId, req.query);
-      res.status(200).json({ success: true, ...result });
+      res.status(200).json({ 
+        success: true, 
+        message: "Orders fetched successfully",
+        meta: result.meta,
+        data: result.orders 
+      });
     } catch (err: any) {
       next(err);
     }

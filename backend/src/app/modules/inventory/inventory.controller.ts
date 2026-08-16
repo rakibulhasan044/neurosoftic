@@ -5,7 +5,12 @@ export const InventoryController = {
   getInventory: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await InventoryService.getInventory(req.query);
-      res.status(200).json({ success: true, ...result });
+      res.status(200).json({ 
+        success: true, 
+        message: "Inventory fetched successfully",
+        meta: result.meta,
+        data: result.variants 
+      });
     } catch (err: any) {
       next(err);
     }

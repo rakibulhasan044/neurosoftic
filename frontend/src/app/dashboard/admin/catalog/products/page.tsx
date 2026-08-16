@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import useSWR from "swr";
-import { fetcher } from "@/lib/fetcher";
+import { fetcherWithMeta } from "@/lib/fetcher";
 import Link from "next/link";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -27,12 +28,16 @@ import { Plus, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ProductsPage() {
-  const { data: products = [], isLoading, mutate } = useSWR(
-    `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/products`,
-    fetcher
+  const [page, setPage] = useState(1);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const { data: response, isLoading, mutate } = useSWR(
+    `${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/products?page=${page}&limit=10`,
+    fetcherWithMeta
   );
   
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const products = response?.data || [];
+  const meta = response?.meta || { totalPages: 1 };
 
   const deleteProduct = async () => {
     if (!deleteId) return;
@@ -120,6 +125,14 @@ export default function ProductsPage() {
           </TableBody>
         </Table>
       </div>
+
+      {meta.totalPages > 1 && (
+        <PaginationControls
+          currentPage={page}
+          totalPages={meta.totalPages}
+          onPageChange={setPage}
+        />
+      )}
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>

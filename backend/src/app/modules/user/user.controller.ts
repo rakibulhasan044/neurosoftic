@@ -119,7 +119,12 @@ export const UserController = {
   getCustomers: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await UserService.getCustomers(req.query);
-      res.status(200).json({ success: true, ...result });
+      res.status(200).json({ 
+        success: true, 
+        message: "Customers fetched successfully",
+        meta: result.meta,
+        data: result.users 
+      });
     } catch (err: any) {
       next(err);
     }
@@ -127,7 +132,12 @@ export const UserController = {
   getStaff: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await UserService.getStaff(req.query);
-      res.status(200).json({ success: true, ...result });
+      res.status(200).json({ 
+        success: true, 
+        message: "Staff fetched successfully",
+        meta: result.meta,
+        data: result.users 
+      });
     } catch (err: any) {
       next(err);
     }

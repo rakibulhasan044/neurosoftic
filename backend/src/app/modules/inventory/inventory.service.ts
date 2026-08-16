@@ -1,9 +1,10 @@
 import { prisma } from "../../lib/prisma";
+import { paginationHelper } from "../../shared/paginationHelper";
 
 export const InventoryService = {
   getInventory: async (filters: any) => {
-    const { page = 1, limit = 50, search } = filters;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(filters);
+    const { search } = filters;
 
     const where: any = {};
     if (search) {
@@ -13,12 +14,12 @@ export const InventoryService = {
     const [variants, total] = await Promise.all([
       prisma.productVariant.findMany({
         where,
-        skip: Number(skip),
-        take: Number(limit),
+        skip,
+        take: limit,
         include: {
           product: { select: { name: true, media: true } }
         },
-        orderBy: { stock: 'asc' }
+        orderBy: { [sortBy === 'createdAt' ? 'stock' : sortBy]: sortOrder }
       }),
       prisma.productVariant.count({ where })
     ]);
@@ -27,8 +28,8 @@ export const InventoryService = {
       variants,
       meta: {
         total,
-        page: Number(page),
-        limit: Number(limit),
+        page,
+        limit,
         totalPages: Math.ceil(total / limit)
       }
     };

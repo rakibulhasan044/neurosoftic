@@ -1,5 +1,5 @@
-
 import { prisma } from "../../lib/prisma";
+import { paginationHelper } from "../../shared/paginationHelper";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
@@ -158,17 +158,17 @@ export const OrderService = {
   },
 
   getOrders: async (filters: any) => {
-    const { page = 1, limit = 10, status } = filters;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(filters);
+    const { status } = filters;
 
-    const where = status ? { status } : {};
+    const where = status && status !== "ALL" ? { status } : {};
 
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
         where,
-        skip: Number(skip),
-        take: Number(limit),
-        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder },
         include: {
           user: { select: { name: true, email: true } },
           payment: true
@@ -181,16 +181,15 @@ export const OrderService = {
       orders,
       meta: {
         total,
-        page: Number(page),
-        limit: Number(limit),
+        page,
+        limit,
         totalPages: Math.ceil(total / limit)
       }
     };
   },
 
   getMyOrders: async (userId: string, filters: any) => {
-    const { page = 1, limit = 10 } = filters;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(filters);
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
     const userEmail = user?.email;
@@ -209,9 +208,9 @@ export const OrderService = {
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
         where: whereClause,
-        skip: Number(skip),
-        take: Number(limit),
-        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder },
         include: {
           items: {
             include: {
@@ -230,8 +229,8 @@ export const OrderService = {
       orders,
       meta: {
         total,
-        page: Number(page),
-        limit: Number(limit),
+        page,
+        limit,
         totalPages: Math.ceil(total / limit)
       }
     };

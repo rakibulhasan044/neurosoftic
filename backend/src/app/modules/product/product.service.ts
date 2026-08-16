@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma";
+import { paginationHelper } from "../../shared/paginationHelper";
 
 export const ProductService = {
   createProduct: async (payload: any) => {
@@ -33,7 +34,9 @@ export const ProductService = {
       ];
     }
 
-    let orderBy: any = { createdAt: "desc" };
+    let orderBy: any = {};
+    const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(query);
+
     if (query?.sort) {
       if (query.sort === "price-asc") {
         orderBy = { variants: { _min: { price: "asc" } } };
@@ -41,12 +44,18 @@ export const ProductService = {
         orderBy = { variants: { _max: { price: "desc" } } };
       } else if (query.sort === "newest") {
         orderBy = { createdAt: "desc" };
+      } else if (query.sort === "oldest") {
+        orderBy = { createdAt: "asc" };
       }
+    } else {
+      orderBy = { [sortBy]: sortOrder };
     }
 
-    const products = await prisma.product.findMany({
+    const productsPromise = prisma.product.findMany({
       where,
       orderBy,
+      skip,
+      take: limit,
       include: {
         category: true,
         brand: true,
@@ -66,22 +75,41 @@ export const ProductService = {
       }
     });
 
+    const countPromise = prisma.product.count({ where });
+
+    const [products, total] = await prisma.$transaction([productsPromise, countPromise]);
+
     // Add computed stats
-    return products.map(product => {
-      let totalOrders = 0;
-      product.variants.forEach((v: any) => {
-        totalOrders += (v._count?.orderItems || 0);
-      });
+    const data = products.map(product => {
+      const activeVariants = product.variants.filter(v => v.isActive);
+      const minPrice = activeVariants.length > 0 
+        ? Math.min(...activeVariants.map(v => v.price))
+        : 0;
       
-      const totalRating = product.reviews.reduce((acc: number, r: any) => acc + r.rating, 0);
-      const avgRating = product.reviews.length > 0 ? (totalRating / product.reviews.length).toFixed(1) : "0.0";
+      const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
+      const totalSales = product.variants.reduce((sum, v) => sum + v._count.orderItems, 0);
       
+      const avgRating = product.reviews.length > 0
+        ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
+        : 0;
+
       return {
         ...product,
-        totalOrders,
-        avgRating
+        minPrice,
+        totalStock,
+        totalSales,
+        avgRating,
       };
     });
+
+    return {
+      meta: {
+        page,
+        limit,
+        total,
+      },
+      data,
+    };
   },
 
   getProductBySlug: async (slug: string) => {

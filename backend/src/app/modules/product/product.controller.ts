@@ -21,7 +21,8 @@ export const ProductController = {
       res.status(200).json({
         success: true,
         message: "Products fetched successfully",
-        data: result,
+        meta: result.meta,
+        data: result.data,
       });
     } catch (err: any) {
       next(err);
