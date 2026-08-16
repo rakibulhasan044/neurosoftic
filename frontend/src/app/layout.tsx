@@ -12,21 +12,31 @@ const roboto = Roboto({ weight: ["400", "500", "700"], subsets: ["latin"], varia
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: any,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const settings = await getStoreSettings();
+  const seo = settings?.seo || {};
+  const identity = settings?.identity || {};
+  
   return {
-    title: "Neurosoftic | Premium Tech & Lifestyle",
-    description: "Elevate your everyday experience with premium tech products.",
-    keywords: "premium electronics, audio, smart home",
+    title: seo.title || identity.companyName || "Neurosoftic | Premium Tech & Lifestyle",
+    description: seo.description || "Elevate your everyday experience with premium tech products.",
+    keywords: seo.keywords || "premium electronics, audio, smart home",
+    openGraph: seo.ogImage ? {
+      images: [seo.ogImage],
+    } : undefined,
     icons: {
-      icon: "/favicon.ico",
-      apple: "/apple-touch-icon.png",
+      icon: settings?.theme?.faviconUrl || "/favicon.ico",
+      apple: settings?.theme?.appIconUrl || "/apple-touch-icon.png",
     }
   };
 }
 
 async function getStoreSettings() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/store-settings`, { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/store-settings`, { next: { revalidate: 60 } });
     if (res.ok) {
       const data = await res.json();
       return data.data;
