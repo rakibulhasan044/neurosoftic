@@ -12,24 +12,14 @@ const roboto = Roboto({ weight: ["400", "500", "700"], subsets: ["latin"], varia
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
-export async function generateMetadata(
-  { params }: any,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  const settings = await getStoreSettings();
-  const seo = settings?.seo || {};
-  const identity = settings?.identity || {};
-  
+export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: seo.title || identity.companyName || "Neurosoftic | Premium Tech & Lifestyle",
-    description: seo.description || "Elevate your everyday experience with premium tech products.",
-    keywords: seo.keywords || "premium electronics, audio, smart home",
-    openGraph: seo.ogImage ? {
-      images: [seo.ogImage],
-    } : undefined,
+    title: "Neurosoftic | Premium Tech & Lifestyle",
+    description: "Elevate your everyday experience with premium tech products.",
+    keywords: "premium electronics, audio, smart home",
     icons: {
-      icon: settings?.theme?.faviconUrl || "/favicon.ico",
-      apple: settings?.theme?.appIconUrl || "/apple-touch-icon.png",
+      icon: "/favicon.ico",
+      apple: "/apple-touch-icon.png",
     }
   };
 }

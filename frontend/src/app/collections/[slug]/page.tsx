@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
 async function getCollection(slug: string) {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/collections/${slug}`, { 
-      cache: 'no-store' 
+      cache: 'no-store'
     });
     if (!res.ok) {
       if (res.status === 404) return null;
