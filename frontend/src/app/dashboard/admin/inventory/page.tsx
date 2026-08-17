@@ -30,7 +30,7 @@ export default function AdminInventoryPage() {
         headers: { "Authorization": `Bearer ${token}` }});
       if (res.ok) {
         const data = await res.json();
-        setVariants(data.data || []);
+        setVariants(data.data || data.variants || []);
         if (data.meta) setMeta(data.meta);
       }
     } catch (error) {

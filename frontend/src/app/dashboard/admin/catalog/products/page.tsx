@@ -36,7 +36,7 @@ export default function ProductsPage() {
     fetcherWithMeta
   );
   
-  const products = response?.data || [];
+  const products = response?.data || response?.products || [];
   const meta = response?.meta || { totalPages: 1 };
 
   const deleteProduct = async () => {

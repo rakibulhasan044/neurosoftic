@@ -55,7 +55,7 @@ export function AdminOrdersClient() {
         
         if (res.ok) {
           const data = await res.json();
-          setOrders(data.data || []);
+          setOrders(data.data || data.orders || []);
           if (data.meta) setMeta(data.meta);
         }
       } catch (error) {

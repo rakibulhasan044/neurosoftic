@@ -22,7 +22,7 @@ export function AdminCustomersClient() {
         
         if (res.ok) {
           const data = await res.json();
-          setCustomers(data.data || []);
+          setCustomers(data.data || data.users || []);
           if (data.meta) setMeta(data.meta);
         }
       } catch (error) {

@@ -25,7 +25,7 @@ export default function CustomerOrdersPage() {
           headers: { "Authorization": `Bearer ${token}` }});
         if (res.ok) {
           const data = await res.json();
-          setOrders(data.data || []);
+          setOrders(data.data || data.orders || []);
           if (data.meta) setMeta(data.meta);
         }
       } catch (err) {
