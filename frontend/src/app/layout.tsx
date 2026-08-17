@@ -36,13 +36,22 @@ export async function generateMetadata(
 
 async function getStoreSettings() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/store-settings`, { next: { revalidate: 60 } });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5s max wait for SEO
+    
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/store-settings`, { 
+      next: { revalidate: 300 }, // Cache for 5 minutes
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
     if (res.ok) {
       const data = await res.json();
       return data.data;
     }
   } catch (err) {
-    console.error("Failed to fetch store settings", err);
+    console.error("Failed to fetch store settings for metadata, using defaults.");
   }
   return null;
 }

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Suspense } from "react";
 import { AnnouncementBar } from "@/components/modules/home/AnnouncementBar";
 import { HeroSlider } from "@/components/modules/home/HeroSlider";
 import { FeaturedCategories } from "@/components/modules/home/FeaturedCategories";
@@ -12,7 +13,7 @@ import { FAQSection } from "@/components/modules/home/FAQSection";
 
 async function getStoreBanners() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/store-settings`, { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/store-settings`, { next: { revalidate: 300 } });
     if (res.ok) {
       const data = await res.json();
       return data.data?.banners || [];
@@ -23,20 +24,31 @@ async function getStoreBanners() {
   return [];
 }
 
-export default async function Home() {
+async function HeroSection() {
   const banners = await getStoreBanners();
   const heroBanner = banners.find((b: any) => b.position === "HERO" && b.isActive);
-  const promoBanner = banners.find((b: any) => b.position === "PROMO" && b.isActive);
+  return <HeroSlider heroBanner={heroBanner} />;
+}
 
+export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <AnnouncementBar />
-      <HeroSlider heroBanner={heroBanner} />
-      <FeaturedCategories />
-      <LatestCollection />
-      <CollectionGrid />
-      <BestSellers />
-      {/* <SplitPromoBlock promoBanner={promoBanner} /> */}
+      <Suspense fallback={<div className="h-[60vh] min-h-[500px] w-full bg-muted animate-pulse rounded-3xl container mx-auto px-4 mt-6" />}>
+        <HeroSection />
+      </Suspense>
+      <Suspense fallback={<div className="h-64 container mx-auto bg-muted animate-pulse rounded-xl mt-10" />}>
+        <FeaturedCategories />
+      </Suspense>
+      <Suspense fallback={<div className="h-64 container mx-auto bg-muted animate-pulse rounded-xl mt-10" />}>
+        <LatestCollection />
+      </Suspense>
+      <Suspense fallback={<div className="h-64 container mx-auto bg-muted animate-pulse rounded-xl mt-10" />}>
+        <CollectionGrid />
+      </Suspense>
+      <Suspense fallback={<div className="h-64 container mx-auto bg-muted animate-pulse rounded-xl mt-10" />}>
+        <BestSellers />
+      </Suspense>
       <BrandStrip />
       <TrustUSP />
       <Testimonials />
