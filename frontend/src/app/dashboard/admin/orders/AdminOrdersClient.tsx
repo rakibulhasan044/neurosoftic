@@ -133,7 +133,7 @@ export function AdminOrdersClient() {
               />
             </div>
             <div className="w-full sm:w-[200px]">
-              <Select value={statusFilter} onValueChange={(val) => {setStatusFilter(val); setPage(1);}}>
+              <Select value={statusFilter} onValueChange={(val) => {setStatusFilter(val || "ALL"); setPage(1);}}>
                 <SelectTrigger>
                   <Filter className="w-4 h-4 mr-2" />
                   <SelectValue placeholder="Filter by Status" />
