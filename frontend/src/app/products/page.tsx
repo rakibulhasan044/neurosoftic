@@ -30,10 +30,10 @@ async function getProducts(searchParams?: any) {
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to fetch');
     const json = await res.json();
-    return { data: json.data || [], meta: json.meta };
+    return { data: json.data || [], meta: json.meta || { page: 1, totalPages: 1, total: 0 } };
   } catch (error) {
     console.error("Error fetching products:", error);
-    return { data: [], meta: { totalPages: 1, page: 1 } };
+    return { data: [], meta: { page: 1, totalPages: 1, total: 0 } };
   }
 }
 
@@ -91,8 +91,10 @@ export default async function ProductsPage({ searchParams }: any) {
         </div>
       )}
 
-      {meta && meta.totalPages > 1 && (
-        <PaginationClient currentPage={meta.page} totalPages={meta.totalPages} />
+      {meta && (
+        <div className="mt-12">
+          <PaginationClient currentPage={meta.page} totalPages={meta.totalPages} />
+        </div>
       )}
     </div>
   );

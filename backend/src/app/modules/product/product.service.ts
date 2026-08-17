@@ -81,12 +81,12 @@ export const ProductService = {
 
     // Add computed stats
     const data = products.map(product => {
-      const activeVariants = product.variants.filter(v => v.isActive);
-      const minPrice = activeVariants.length > 0 
-        ? Math.min(...activeVariants.map(v => v.price))
+      const activeVariants = product.variants.filter((v: any) => Boolean((v as any).isActive));
+      const minPrice = activeVariants.length > 0
+        ? Math.min(...activeVariants.map((v: any) => Number(v.price)))
         : 0;
-      
-      const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
+
+      const totalStock = product.variants.reduce((sum, v: any) => sum + Number(v.stock || 0), 0);
       const totalSales = product.variants.reduce((sum, v) => sum + v._count.orderItems, 0);
       
       const avgRating = product.reviews.length > 0
@@ -107,6 +107,7 @@ export const ProductService = {
         page,
         limit,
         total,
+        totalPages: Math.ceil(total / limit),
       },
       data,
     };

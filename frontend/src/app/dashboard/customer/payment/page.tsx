@@ -21,7 +21,10 @@ export default function CustomerPaymentPage() {
           headers: { "Authorization": `Bearer ${token}` }});
         if (res.ok) {
           const data = await res.json();
-          setOrders(data.orders || []);
+          setOrders(data.data || data.orders || []);
+        } else if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem("token");
+          window.location.href = "/auth/login";
         }
       } catch (err) {
         console.error(err);

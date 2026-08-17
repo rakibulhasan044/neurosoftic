@@ -16,7 +16,7 @@ export default function CustomerLayout({
     <RoleGuard>
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row gap-8 min-h-[calc(100vh-12rem)]">
-          <aside className="w-full md:w-64 flex-shrink-0">
+          <aside className="w-full md:w-64 flex-shrink-0 self-start md:sticky md:top-24 md:h-[calc(100vh-8rem)] md:overflow-y-auto no-scrollbar">
             <CustomerSidebar />
           </aside>
           <main className="flex-1">

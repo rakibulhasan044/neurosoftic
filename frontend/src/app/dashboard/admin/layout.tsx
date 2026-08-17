@@ -14,7 +14,7 @@ export default function AdminLayout({
 }) {
   return (
     <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
-      <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-muted/20">
+      <div className="flex h-screen overflow-hidden bg-muted/20">
         <AdminSidebar />
         <main className="flex-1 overflow-y-auto p-8">
           {children}

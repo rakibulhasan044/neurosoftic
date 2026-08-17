@@ -32,6 +32,10 @@ export default function AdminInventoryPage() {
         const data = await res.json();
         setVariants(data.data || data.variants || []);
         if (data.meta) setMeta(data.meta);
+      } else if (res.status === 401 || res.status === 403) {
+        toast.error("Session expired. Please login again.");
+        localStorage.removeItem("token");
+        window.location.href = "/auth/login";
       }
     } catch (error) {
       console.error("Failed to fetch inventory", error);
@@ -176,15 +180,13 @@ export default function AdminInventoryPage() {
             </TableBody>
           </Table>
 
-          {meta.totalPages > 1 && (
-            <div className="mt-4">
-              <PaginationControls
-                currentPage={page}
-                totalPages={meta.totalPages}
-                onPageChange={setPage}
-              />
-            </div>
-          )}
+          <div className="mt-4">
+            <PaginationControls
+              currentPage={page}
+              totalPages={meta.totalPages}
+              onPageChange={setPage}
+            />
+          </div>
         </CardContent>
       </Card>
 

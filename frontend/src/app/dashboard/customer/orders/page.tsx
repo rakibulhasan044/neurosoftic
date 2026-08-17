@@ -28,6 +28,9 @@ export default function CustomerOrdersPage() {
           const data = await res.json();
           setOrders(data.data || data.orders || []);
           if (data.meta) setMeta(data.meta);
+        } else if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem("token");
+          window.location.href = "/auth/login";
         }
       } catch (err) {
         console.error(err);
@@ -105,15 +108,13 @@ export default function CustomerOrdersPage() {
           ))}
         </div>
         
-        {meta.totalPages > 1 && (
-          <div className="mt-8">
-            <PaginationControls
-              currentPage={page}
-              totalPages={meta.totalPages}
-              onPageChange={setPage}
-            />
-          </div>
-        )}
+        <div className="mt-8">
+          <PaginationControls
+            currentPage={page}
+            totalPages={meta.totalPages}
+            onPageChange={setPage}
+          />
+        </div>
       </>
     )}
     </div>

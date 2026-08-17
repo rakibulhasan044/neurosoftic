@@ -126,13 +126,13 @@ export default function ProductsPage() {
         </Table>
       </div>
 
-      {meta.totalPages > 1 && (
+      <div className="mt-4">
         <PaginationControls
           currentPage={page}
           totalPages={meta.totalPages}
           onPageChange={setPage}
         />
-      )}
+      </div>
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>

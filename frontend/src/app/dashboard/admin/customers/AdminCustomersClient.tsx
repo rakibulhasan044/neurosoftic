@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 export function AdminCustomersClient() {
   const [customers, setCustomers] = useState<any[]>([]);
@@ -25,6 +26,10 @@ export function AdminCustomersClient() {
           const data = await res.json();
           setCustomers(data.data || data.users || []);
           if (data.meta) setMeta(data.meta);
+        } else if (res.status === 401 || res.status === 403) {
+          toast.error("Session expired. Please login again.");
+          localStorage.removeItem("token");
+          window.location.href = "/auth/login";
         }
       } catch (error) {
         console.error("Failed to fetch customers", error);
@@ -85,15 +90,13 @@ export function AdminCustomersClient() {
             )}
             </TableBody>
           </Table>
-        {meta.totalPages > 1 && (
-          <div className="mt-4">
-            <PaginationControls
-              currentPage={page}
-              totalPages={meta.totalPages}
-              onPageChange={setPage}
-            />
-          </div>
-        )}
+        <div className="mt-4">
+          <PaginationControls
+            currentPage={page}
+            totalPages={meta.totalPages}
+            onPageChange={setPage}
+          />
+        </div>
       </CardContent>
     </Card>
   );

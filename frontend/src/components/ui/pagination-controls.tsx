@@ -10,47 +10,47 @@ interface PaginationControlsProps {
 }
 
 export function PaginationControls({ currentPage, totalPages, onPageChange }: PaginationControlsProps) {
-  if (totalPages <= 1) return null;
+  // Always show, even if 1 page (user requested)
+  const safeTotalPages = Math.max(1, Number(totalPages) || 1);
+  const safeCurrentPage = Math.max(1, Number(currentPage) || 1);
 
   const getPageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5;
     
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    if (safeTotalPages <= maxVisiblePages) {
+      for (let i = 1; i <= safeTotalPages; i++) pages.push(i);
     } else {
-      if (currentPage <= 3) {
+      if (safeCurrentPage <= 3) {
         for (let i = 1; i <= 4; i++) pages.push(i);
         pages.push('...');
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
+        pages.push(safeTotalPages);
+      } else if (safeCurrentPage >= safeTotalPages - 2) {
         pages.push(1);
         pages.push('...');
-        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+        for (let i = safeTotalPages - 3; i <= safeTotalPages; i++) pages.push(i);
       } else {
         pages.push(1);
         pages.push('...');
-        pages.push(currentPage - 1);
-        pages.push(currentPage);
-        pages.push(currentPage + 1);
+        pages.push(safeCurrentPage - 1);
+        pages.push(safeCurrentPage);
+        pages.push(safeCurrentPage + 1);
         pages.push('...');
-        pages.push(totalPages);
+        pages.push(safeTotalPages);
       }
     }
     return pages;
   };
 
   return (
-    <div className="flex items-center justify-between py-4 border-t">
-      <p className="text-sm text-muted-foreground hidden sm:block">
-        Showing Page {currentPage} of {totalPages}
-      </p>
-      <div className="flex gap-1 sm:gap-2 mx-auto sm:mx-0">
+    <div className="flex flex-col items-center justify-center py-6 border-t gap-4">
+      <div className="flex gap-1 sm:gap-2 mx-auto">
         <Button
           variant="outline"
           size="sm"
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage <= 1}
+          onClick={() => onPageChange(safeCurrentPage - 1)}
+          disabled={safeCurrentPage <= 1}
+          className="cursor-pointer disabled:cursor-not-allowed"
         >
           <ChevronLeft className="h-4 w-4 sm:mr-1" />
           <span className="hidden sm:inline">Prev</span>
@@ -60,10 +60,10 @@ export function PaginationControls({ currentPage, totalPages, onPageChange }: Pa
           typeof page === 'number' ? (
             <Button
               key={index}
-              variant={currentPage === page ? "default" : "outline"}
+              variant={safeCurrentPage === page ? "default" : "outline"}
               size="sm"
               onClick={() => onPageChange(page)}
-              className="w-9"
+              className="w-9 cursor-pointer"
             >
               {page}
             </Button>
@@ -77,13 +77,17 @@ export function PaginationControls({ currentPage, totalPages, onPageChange }: Pa
         <Button
           variant="outline"
           size="sm"
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage >= totalPages}
+          onClick={() => onPageChange(safeCurrentPage + 1)}
+          disabled={safeCurrentPage >= safeTotalPages}
+          className="cursor-pointer disabled:cursor-not-allowed"
         >
           <span className="hidden sm:inline">Next</span>
           <ChevronRight className="h-4 w-4 sm:ml-1" />
         </Button>
       </div>
+      <p className="text-sm text-muted-foreground">
+        Showing Page {safeCurrentPage} of {safeTotalPages}
+      </p>
     </div>
   );
 }

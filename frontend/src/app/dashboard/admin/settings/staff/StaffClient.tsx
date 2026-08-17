@@ -61,7 +61,7 @@ export function StaffClient() {
         headers: { "Authorization": `Bearer ${token}` }});
       const data = await res.json();
       if (res.ok && data.success) {
-        setStaff(data.users || []);
+        setStaff(data.data || data.users || []);
       }
     } catch (error) {
       toast.error("Failed to fetch staff");

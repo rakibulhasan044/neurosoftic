@@ -10,8 +10,12 @@ export async function BestSellers() {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:8000/api/v1'}/products`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
-      // Sort by sales (totalOrders) and take top 8
-      products = (data.data || []).sort((a: any, b: any) => (b.totalOrders || 0) - (a.totalOrders || 0)).slice(0, 8);
+      // Calculate totalOrders for each product by summing variant orderItems, then sort and take top 8
+      const productsWithOrders = (data.data || []).map((p: any) => ({
+        ...p,
+        computedOrders: p.totalOrders || (p.variants?.reduce((sum: number, v: any) => sum + (v._count?.orderItems || 0), 0)) || 0
+      }));
+      products = productsWithOrders.sort((a: any, b: any) => b.computedOrders - a.computedOrders).slice(0, 8);
     }
   } catch (error) {}
 

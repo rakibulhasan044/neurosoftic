@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import Link from "next/link";
@@ -25,7 +26,7 @@ export function ProductCard({ product, showBadge }: ProductCardProps) {
   const totalStock = product.variants?.reduce((sum: number, v: any) => sum + v.stock, 0) || 0;
   
   const avgRating = product.avgRating || "0.0";
-  const totalOrders = product.totalOrders || 0;
+  const totalOrders = product.totalOrders || (product.variants?.reduce((sum: number, v: any) => sum + (v._count?.orderItems || 0), 0)) || 0;
   
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigating to product link

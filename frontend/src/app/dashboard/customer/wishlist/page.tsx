@@ -19,6 +19,9 @@ export default function WishlistPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setWishlistItems(data.data?.items || []);
+      } else if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem("token");
+        window.location.href = "/auth/login";
       }
     } catch (error) {
       toast.error("Failed to load wishlist");

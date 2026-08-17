@@ -33,11 +33,17 @@ export default function CustomerDashboardPage() {
         if (profileRes.ok) {
           const profileData = await profileRes.json();
           setProfile(profileData.data);
+        } else if (profileRes.status === 401 || profileRes.status === 403) {
+          localStorage.removeItem("token");
+          window.location.href = "/auth/login";
+          return;
         }
+
         if (ordersRes.ok) {
           const ordersData = await ordersRes.json();
-          setOrders(ordersData.orders || []);
+          setOrders(ordersData.data || ordersData.orders || []);
         }
+
         if (wishlistRes.ok) {
           const wishlistData = await wishlistRes.json();
           setWishlistCount(wishlistData.data?.items?.length || 0);
