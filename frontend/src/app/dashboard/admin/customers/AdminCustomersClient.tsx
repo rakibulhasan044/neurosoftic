@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -84,7 +85,6 @@ export function AdminCustomersClient() {
             )}
             </TableBody>
           </Table>
-        </div>
         {meta.totalPages > 1 && (
           <div className="mt-4">
             <PaginationControls

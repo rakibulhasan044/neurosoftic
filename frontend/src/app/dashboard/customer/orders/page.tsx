@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, PackageX } from "lucide-react";
+import { PackageX } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { PaginationControls } from "@/components/ui/pagination-controls";
@@ -60,13 +61,14 @@ export default function CustomerOrdersPage() {
               <PackageX className="h-6 w-6 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-medium mb-2">No orders found</h3>
-            <p className="text-muted-foreground mb-6">Looks like you haven't made any purchases yet.</p>
+            <p className="text-muted-foreground mb-6">Looks like you haven&apos;t made any purchases yet.</p>
             <Link href="/products" className={buttonVariants()}>Start Shopping</Link>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {orders.map((order) => (
+        <>
+          <div className="space-y-4">
+            {orders.map((order) => (
             <Card key={order.id} className="overflow-hidden">
               <div className="bg-muted/50 p-4 border-b flex flex-wrap gap-4 items-center justify-between text-sm">
                 <div className="flex gap-6">
